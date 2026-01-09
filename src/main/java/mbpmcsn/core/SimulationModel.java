@@ -6,5 +6,5 @@ package mbpmcsn.core;
  * next-event time advance loop
  */
 
-public class SimulationModel {
+public final class SimulationModel {
 }

@@ -7,7 +7,7 @@ import mbpmcsn.entity.Job;
  * Represents a discrete event in the simulation.
  */
 
-public class Event implements Comparable<Event> {
+public final class Event implements Comparable<Event> {
 
 	private final double t; // time at which event happens
 	private final EventType type; // event type
@@ -30,9 +30,19 @@ public class Event implements Comparable<Event> {
 	public double getTime() {
 		return t;
 	}
-	public EventType getType() { return type; }
-	public Center getTargetCenter() { return targetCenter; }
-	public Job getJob() { return job; }
+
+	public EventType getType() { 
+		return type; 
+	}
+
+	public Center getTargetCenter() { 
+		return targetCenter; 
+	}
+
+	public Job getJob() { 
+		return job; 
+	}
+
 	public Object getArgs() {
 		return args;
 	}

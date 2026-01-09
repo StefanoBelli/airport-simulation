@@ -1,6 +1,7 @@
 package mbpmcsn.center;
 
 import mbpmcsn.process.ServiceProcess;
+import mbpmcsn.event.Event;
 
 /**
  * m parallel servers and a single FIFO queue
@@ -10,18 +11,18 @@ import mbpmcsn.process.ServiceProcess;
 public class MultiServerSingleQueue extends Center {
 	private final int numServers;
 
-	public MultiServerSingleQueue(ServiceProcess serviceProcess,NetworkRoutingPoint networkRoutingPoint, String name, int numServers) {
-		super(serviceProcess, networkRoutingPoint, name);
+	public MultiServerSingleQueue(int id, String name, ServiceProcess serviceProcess,NetworkRoutingPoint networkRoutingPoint, int numServers) {
+		super(id, name, serviceProcess, networkRoutingPoint);
 		this.numServers = numServers;
 	}
 
 	@Override
-	public void onArrival(Object data) {
+	public void onArrival(Event event) {
 
 	}
 
 	@Override
-	public void onCompletion(Object data) {
+	public void onCompletion(Event event) {
 
 	}
 }

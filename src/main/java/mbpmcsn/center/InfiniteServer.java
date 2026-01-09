@@ -1,6 +1,7 @@
 package mbpmcsn.center;
 
 import mbpmcsn.process.ServiceProcess;
+import mbpmcsn.event.Event;
 
 /**
  * represents a Delay Node (no queue)
@@ -8,17 +9,17 @@ import mbpmcsn.process.ServiceProcess;
  */
 
 public class InfiniteServer extends Center {
-	public InfiniteServer(ServiceProcess serviceProcess, NetworkRoutingPoint networkRoutingPoint, String name) {
-		super(serviceProcess, networkRoutingPoint, name);
+	public InfiniteServer(int id, String name, ServiceProcess serviceProcess, NetworkRoutingPoint networkRoutingPoint) {
+		super(id, name, serviceProcess, networkRoutingPoint);
 	}
 
 	@Override
-	public void onArrival(Object args) {
+	public void onArrival(Event event) {
 
 	}
 
 	@Override
-	public void onCompletion(Object args) {
+	public void onCompletion(Event event) {
 
 	}
 }

@@ -7,15 +7,13 @@ import java.util.Map;
  * utility class for collecting statistical data during the simulation
  */
 
-public class StatCollector {
+public final class StatCollector {
 
     // map used to associate names's metrics (es. "Queue_CheckIn") to accumulators
     private final Map<String, PopulationStat> populationStats = new HashMap<>();
     private final Map<String, TimeStat> timeStats = new HashMap<>();
 
-    public StatCollector() {
-    }
-
+    // is this really needed??
     public void clear() {
         populationStats.clear();
         timeStats.clear();
@@ -28,7 +26,10 @@ public class StatCollector {
     }
 
     public double getPopulationMean(String name) {
-        if (!populationStats.containsKey(name)) return 0.0;
+        if (!populationStats.containsKey(name)) {
+        	return 0.0;
+        }
+
         return populationStats.get(name).calculateMean();
     }
 
@@ -39,7 +40,10 @@ public class StatCollector {
     }
 
     public double getTimeWeightedMean(String name) {
-        if (!timeStats.containsKey(name)) return 0.0;
+        if (!timeStats.containsKey(name)) {
+        	return 0.0;
+        }
+
         return timeStats.get(name).calculateMean();
     }
 }

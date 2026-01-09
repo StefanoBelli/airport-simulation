@@ -6,13 +6,10 @@ package mbpmcsn.stats;
  * calculates the time average: Integral(Value * Duration) / TotalTime.
  */
 
-public class TimeStat {
+public final class TimeStat {
 
     private double totalArea = 0.0;   // area under the curve (ValueSum * Duration)
     private double totalTime = 0.0;   // total time of observation
-
-    public TimeStat() {
-    }
 
     /**
      * update integral

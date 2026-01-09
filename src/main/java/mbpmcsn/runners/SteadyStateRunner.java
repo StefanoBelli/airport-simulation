@@ -6,5 +6,6 @@ package mbpmcsn.runners;
  * an estimate confidence intervals
  */
 
-public class SteadyStateRunner {
+public final class SteadyStateRunner {
+
 }

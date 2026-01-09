@@ -5,5 +5,6 @@ package mbpmcsn.stats;
  * for then using the CSV utility classes
  */
 
-public class StatLogger {
+public final class StatLogger {
+
 }

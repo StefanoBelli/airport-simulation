@@ -1,6 +1,7 @@
 package mbpmcsn.center;
 
 import mbpmcsn.process.ServiceProcess;
+import mbpmcsn.event.Event;
 
 /**
  * m server, where each server has its own dedicated queue
@@ -11,18 +12,18 @@ import mbpmcsn.process.ServiceProcess;
 public class MultiServerMultiQueue extends Center {
 	private final int numFlows;
 
-	public MultiServerMultiQueue(ServiceProcess serviceProcess, NetworkRoutingPoint networkRoutingPoint, String name, int numFlows) {
-		super(serviceProcess, networkRoutingPoint, name);
+	public MultiServerMultiQueue(int id, String name, ServiceProcess serviceProcess, NetworkRoutingPoint networkRoutingPoint, int numFlows) {
+		super(id, name, serviceProcess, networkRoutingPoint);
 		this.numFlows = numFlows;
 	}
 
 	@Override
-	public void onArrival(Object args) {
+	public void onArrival(Event event) {
 
 	}
 
 	@Override
-	public void onCompletion(Object args) {
+	public void onCompletion(Event event) {
 
 	}
 }

@@ -6,13 +6,10 @@ package mbpmcsn.stats;
  * calculates average = sum / numerOfObservations
  */
 
-public class PopulationStat {
+public final class PopulationStat {
 
     private long count = 0; // number of observed passegers
     private double sum = 0.0; // sum of the times
-
-    public PopulationStat() {
-    }
 
     //add a new observation
     public void add(double val) {

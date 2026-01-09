@@ -6,7 +6,7 @@ package mbpmcsn.core;
  * and simulation control (es. stop time)
  */
 
-public class Constants {
+public final class Constants {
 
     // --- Simulation Control ---
     public static final long SEED = 123456789L;

@@ -5,5 +5,6 @@ package mbpmcsn.runners;
  * we have to plot curves and identify the warm-up period (cut-off point)
  */
 
-public class TransientAnalysisRunner {
+public final class TransientAnalysisRunner {
+
 }
