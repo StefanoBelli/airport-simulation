@@ -1,7 +1,5 @@
 package mbpmcsn.runners;
 
-import java.lang.reflect.Constructor;
-
 import mbpmcsn.core.SimulationModel;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.event.EventType;
@@ -9,6 +7,7 @@ import mbpmcsn.event.Event;
 import mbpmcsn.stats.StatCollector;
 import mbpmcsn.stats.SampleCollector;
 import mbpmcsn.desbook.Rngs;
+import mbpmcsn.runners.smbuilders.SimulationModelBuilder;
 import static mbpmcsn.core.Constants.SEED;
 
 /**
@@ -24,7 +23,7 @@ public final class FiniteHorizonRunner implements Runner {
 	private final double simulationTime;
 
 	public FiniteHorizonRunner(
-			Class<SimulationModel> simulationModelKlass,
+			SimulationModelBuilder smBuilder,
 			double simulationTime,
 			boolean approxServicesAsExp) {
 
@@ -33,55 +32,37 @@ public final class FiniteHorizonRunner implements Runner {
 		eventQueue = new EventQueue();
 		statCollector = new StatCollector();
 		sampleCollector = null;
-
 		this.simulationTime = simulationTime;
-
-		try {
-			Constructor<SimulationModel> smCtor = 
-				simulationModelKlass.getConstructor(
-					Rngs.class, 
-					EventQueue.class, 
-					StatCollector.class, 
-					SampleCollector.class, 
-					boolean.class);
-
-			simulationModel = smCtor.newInstance(
-				rngs, 
-				eventQueue, 
-				statCollector, 
-				sampleCollector, 
-				approxServicesAsExp);
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		}
+		simulationModel = smBuilder.build(
+				rngs, eventQueue, statCollector, 
+				sampleCollector, approxServicesAsExp);
 	}
 
 	@Override 
 	public void runIt() {
-        statCollector.clear();
-        eventQueue.clear();
+		statCollector.clear();
+		eventQueue.clear();
+		
+		// first arrival
+		simulationModel.planNextArrival();
 
-        // first arrival
-        simulationModel.planNextArrival();
+		// Next-Event loop
+		while (eventQueue.getCurrentClock() < simulationTime) {
+			if (eventQueue.isEmpty()) {
+				break;
+			}
 
-        // Next-Event loop
-        while (eventQueue.getCurrentClock() < simulationTime) {
-            if (eventQueue.isEmpty()) {
-                break;
-            }
+			// extract the upcoming event and process
+			Event e = eventQueue.pop();
 
-            // extract the upcoming event and process
-            Event e = eventQueue.pop();
+			// new arrival
+			if (e.getType() == EventType.ARRIVAL) {
+				if (e.getTime() == e.getJob().getArrivalTime()) {
+					simulationModel.planNextArrival();
+				}
+			}
 
-            // new arrival
-            if (e.getType() == EventType.ARRIVAL) {
-                if (e.getTime() == e.getJob().getArrivalTime()) {
-                    simulationModel.planNextArrival();
-                }
-            }
-
-            simulationModel.processEvent(e);
-        }
- 
+			simulationModel.processEvent(e);
+		}
 	}
 }

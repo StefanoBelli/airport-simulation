@@ -40,7 +40,7 @@ public final class BaseSimulationModel extends SimulationModel {
     private Center centerTrace; // ID 5
     private Center centerRecupero; // ID 6
 
-    private final List<Center> centers = new ArrayList<>();
+    private List<Center> centers;
 
     /* routing */
     private NetworkRoutingPoint routingIngresso;
@@ -188,6 +188,8 @@ public final class BaseSimulationModel extends SimulationModel {
 
     @Override
     protected final void collectAllCenters() {
+    	centers = new ArrayList<>();
+
         centers.add(centerCheckIn);
         centers.add(centerVarchi);
         centers.add(centerPrep);
