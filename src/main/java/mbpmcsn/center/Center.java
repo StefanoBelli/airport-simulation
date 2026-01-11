@@ -20,7 +20,7 @@ public abstract class Center {
 
 	protected final ServiceProcess serviceProcess;
 	private final NetworkRoutingPoint networkRoutingPoint;
-	private final StatCollector statCollector;
+	protected final StatCollector statCollector;
 	private final OnSamplingCallback onSamplingCallback;
 
 	protected long numJobsInNode;

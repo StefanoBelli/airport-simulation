@@ -82,26 +82,10 @@ public abstract class SimulationModel {
         double responseTime = exitTime - arrivalTime;
 
         // save statistic "Tempo di Risposta Aeroporto"
-        statCollector.addSample("SystemResponseTime", responseTime);
-
-        /* DA VALUTARE SE HA SENSO
-           OPPURE COMUNQUE DISTINGUERE TRA
-            - SystemResponseTime_Failed
-            - SystemResponseTime (normale senza Success)
-
-
-		   
-
-           **secondo me si, perche quello che conta è l'utente che termina il percorso e prende effettivamente l'aereo** - ste
-
-
-
-
         if (job.isSecurityCheckFailed()) {
             statCollector.addSample("SystemResponseTime_Failed", responseTime);
         } else {
             statCollector.addSample("SystemResponseTime_Success", responseTime);
         }
-         */
     }
 }

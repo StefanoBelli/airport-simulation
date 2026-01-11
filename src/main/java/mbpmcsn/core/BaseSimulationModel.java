@@ -95,6 +95,15 @@ public final class BaseSimulationModel extends SimulationModel {
 
     @Override
     protected final void createRoutingLogic() {
+        /*
+
+        C'è un problema:
+        - Per creare il Check-In, devi passargli il routing nel costruttore
+        (quindi il routing deve esistere prima del Centro)
+        - Per creare il routing (es. FixedRouting), devi passargli il centro destinazione
+        (es. Varchi) nel costruttore. (quindi il centro deve esistere prima del Routing)
+        - inoltre il next centro deve sempre esistere e dobbiamo metterli a rotroso
+
         routingIngresso = new EntryRouting(centerCheckIn, centerVarchi, STREAM_ARRIVALS);
         routingCheckIn  = new FixedRouting(centerVarchi);
         routingVarchi   = new FixedRouting(centerPrep);
@@ -102,6 +111,9 @@ public final class BaseSimulationModel extends SimulationModel {
         routingXRay     = new XRayRouting(centerTrace, centerRecupero, STREAM_S4_ROUTING);
         routingTrace    = new TraceRouting(centerRecupero, STREAM_S5_ROUTING);
         routingRecupero = new FixedRouting(null);
+
+         */
+
     }
 
     @Override
@@ -112,78 +124,88 @@ public final class BaseSimulationModel extends SimulationModel {
 
     @Override
     protected final void createCenters() {
+
+        // 6. Recupero Oggetti
+        ServiceProcess sp6 = new ServiceProcess(rvgRecupero, rngs, STREAM_S6_SERVICE);
+        NetworkRoutingPoint routingRecupero = new FixedRouting(null);
+        centerRecupero = new InfiniteServer(
+                ID_RECUPERO_OGGETTI,
+                "Recupero",
+                sp6,
+                routingRecupero,
+                statCollector,
+                this.sampleCollector
+        );
+
+        // 5. Trace Detection
+        ServiceProcess sp5 = new ServiceProcess(rvgTrace, rngs, STREAM_S5_SERVICE);
+        NetworkRoutingPoint routingTrace = new TraceRouting(centerRecupero, STREAM_S5_ROUTING);
+        centerTrace = new SingleServerSingleQueue(
+                ID_TRACE_DETECTION ,
+                "TraceDetection",
+                sp5,
+                routingTrace,
+                statCollector,
+                this.sampleCollector
+        );
+
+        // 4. X-Ray (MSMQ) - Nota: Erlang
+        ServiceProcess sp4 = new ServiceProcess(rvgXRay, rngs, STREAM_S4_SERVICE);
+        NetworkRoutingPoint routingXRay = new XRayRouting(centerTrace, centerRecupero, STREAM_S4_ROUTING);
+        FlowAssignmentPolicy rrPolicy = new RoundRobinPolicy();
+        centerXRay = new MultiServerMultiQueue(
+                ID_XRAY,
+                "XRay",
+                sp4,
+                routingXRay,
+                statCollector,
+                this.sampleCollector,
+                M4,
+                rrPolicy
+        );
+
+        // 3. Preparazione
+        ServiceProcess sp3 = new ServiceProcess(rvgPrep, rngs, STREAM_S3_SERVICE);
+        NetworkRoutingPoint routingPrep = new FixedRouting(centerXRay);
+        centerPrep = new InfiniteServer(
+                ID_PREPARAZIONE_OGGETTI,
+                "Preparazione",
+                sp3,
+                routingPrep,
+                statCollector,
+                this.sampleCollector
+        );
+
+        // 2. Varchi (MSMQ)
+        ServiceProcess sp2 = new ServiceProcess(rvgVarchi, rngs, STREAM_S2_SERVICE);
+        NetworkRoutingPoint routingVarchi = new FixedRouting(centerPrep);
+        FlowAssignmentPolicy sqfPolicy = new SqfPolicy(rngs, STREAM_S2_FLOWPOL);
+        centerVarchi = new MultiServerMultiQueue(
+                ID_VARCHI_ELETTRONICI,
+                "Varchi",
+                sp2,
+                routingVarchi,
+                statCollector,
+                this.sampleCollector,
+                M2,
+                sqfPolicy
+        );
+
         // 1. Check-in
         ServiceProcess sp1 = new ServiceProcess(rvgCheckIn, rngs, STREAM_S1_SERVICE);
+        NetworkRoutingPoint routingCheckIn = new FixedRouting(centerVarchi);
         centerCheckIn = new MultiServerSingleQueue(
                 ID_BANCHI_CHECKIN, 
                 "CheckIn", 
                 sp1, 
                 routingCheckIn, 
-                statCollector, 
-                null, 
+                statCollector,
+                this.sampleCollector,
                 M1
         );
 
-        // 2. Varchi (MSMQ)
-        ServiceProcess sp2 = new ServiceProcess(rvgVarchi, rngs, STREAM_S2_SERVICE);
-        FlowAssignmentPolicy sqfPolicy = new SqfPolicy(rngs, STREAM_S2_FLOWPOL);
-        centerVarchi = new MultiServerMultiQueue(
-                ID_VARCHI_ELETTRONICI, 
-                "Varchi", 
-                sp2, 
-                routingVarchi, 
-                statCollector, 
-                null, 
-                M2, 
-                sqfPolicy
-        );
-
-        // 3. Preparazione
-        ServiceProcess sp3 = new ServiceProcess(rvgPrep, rngs, STREAM_S3_SERVICE);
-        centerPrep = new InfiniteServer(
-                ID_PREPARAZIONE_OGGETTI, 
-                "Preparazione", 
-                sp3, 
-                routingPrep, 
-                statCollector, 
-                null
-        );
-
-        // 4. X-Ray (MSMQ) - Nota: Erlang
-        ServiceProcess sp4 = new ServiceProcess(rvgXRay, rngs, STREAM_S4_SERVICE);
-        FlowAssignmentPolicy rrPolicy = new RoundRobinPolicy();
-        centerXRay = new MultiServerMultiQueue(
-                ID_XRAY, 
-                "XRay", 
-                sp4, 
-                routingXRay, 
-                statCollector,
-                null, 
-                M4, 
-                rrPolicy
-        );
-
-        // 5. Trace Detection
-        ServiceProcess sp5 = new ServiceProcess(rvgTrace, rngs, STREAM_S5_SERVICE);
-        centerTrace = new SingleServerSingleQueue(
-                ID_TRACE_DETECTION , 
-                "TraceDetection", 
-                sp5, 
-                routingTrace, 
-                statCollector, 
-                null
-        );
-
-        // 6. Recupero Oggetti
-        ServiceProcess sp6 = new ServiceProcess(rvgRecupero, rngs, STREAM_S6_SERVICE);
-        centerRecupero = new InfiniteServer(
-                ID_RECUPERO_OGGETTI, 
-                "Recupero", 
-                sp6, 
-                routingRecupero, 
-                statCollector, 
-                null
-        );
+        // 0. Infine, l'Ingresso (Ora che CheckIn e Varchi esistono)
+        routingIngresso = new EntryRouting(centerCheckIn, centerVarchi, STREAM_ARRIVALS);
     }
 
     @Override

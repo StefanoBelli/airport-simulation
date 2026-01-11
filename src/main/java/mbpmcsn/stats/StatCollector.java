@@ -45,4 +45,12 @@ public final class StatCollector {
 
         return timeStats.get(name).calculateMean();
     }
+
+    public Map<String, PopulationStat> getPopulationStats() {
+        return populationStats;
+    }
+
+    public Map<String, TimeStat> getTimeStats() {
+        return timeStats;
+    }
 }

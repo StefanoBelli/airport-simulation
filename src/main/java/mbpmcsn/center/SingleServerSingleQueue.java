@@ -2,6 +2,8 @@ package mbpmcsn.center;
 
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
 
 import mbpmcsn.process.ServiceProcess;
 import mbpmcsn.event.Event;
@@ -17,84 +19,97 @@ import mbpmcsn.stats.OnSamplingCallback;
  */
 
 public class SingleServerSingleQueue extends Center {
-	private boolean activeServer;
-	private Queue<Job> jobQueue = new LinkedList<>();
+    private boolean activeServer;
+    private Queue<Job> jobQueue = new LinkedList<>();
 
-	public SingleServerSingleQueue(
-			int id,
-			String name,
-			ServiceProcess serviceProcess,
-			NetworkRoutingPoint networkRoutingPoint,
-			StatCollector statCollector,
-			OnSamplingCallback onSamplingCallback) {
+    public SingleServerSingleQueue(
+            int id,
+            String name,
+            ServiceProcess serviceProcess,
+            NetworkRoutingPoint networkRoutingPoint,
+            StatCollector statCollector,
+            OnSamplingCallback onSamplingCallback) {
 
-		super(
-				id, 
-				name, 
-				serviceProcess, 
-				networkRoutingPoint, 
-				statCollector,
-				onSamplingCallback
-		);
-	}
+        super(
+                id,
+                name,
+                serviceProcess,
+                networkRoutingPoint,
+                statCollector,
+                onSamplingCallback
+        );
+    }
 
-	@Override
-	public void onArrival(Event event, EventQueue eventQueue) {
-		numJobsInNode++;
+    @Override
+    public void onArrival(Event event, EventQueue eventQueue) {
 
-		double now = eventQueue.getCurrentClock();
-		collectTimeStats(now);
+        double now = eventQueue.getCurrentClock();
+        collectTimeStats(now);
 
-		Job job = event.getJob();
-		
-		if(activeServer) {
-			jobQueue.add(job);
-			return;
-		}
+        numJobsInNode++;
 
-		activeServer = true;
+        Job job = event.getJob();
 
-		scheduleDepartureEvent(now, job, eventQueue);
-	}
+        if (activeServer) {
+            jobQueue.add(job);
+            return;
+        }
 
-	@Override
-	public void onDeparture(Event event, EventQueue eventQueue) {
-		numJobsInNode--;
+        activeServer = true;
 
-		double now = eventQueue.getCurrentClock();
-		collectTimeStats(now);
+        scheduleDepartureEvent(now, job, eventQueue);
+    }
 
-		Job job = event.getJob();
-		Center nextCenter = getNextCenter(job);
+    @Override
+    public void onDeparture(Event event, EventQueue eventQueue) {
 
-		Event arrivalEvent = new Event(
-				now, EventType.ARRIVAL, nextCenter, job, null);
+        double now = eventQueue.getCurrentClock();
+        collectTimeStats(now);
 
-		eventQueue.add(arrivalEvent);
-		
-		if(jobQueue.isEmpty()) {
-			activeServer = false;
-			return;
-		}
+        numJobsInNode--;
 
-		job = jobQueue.remove();
+        Job job = event.getJob();
+        Center nextCenter = getNextCenter(job);
 
-		scheduleDepartureEvent(now, job, eventQueue);
-	}
+        if (nextCenter == null) {
+            statCollector.addSample("SystemResponseTime_Success", now - job.getArrivalTime());
+        } else {
+            Event arrivalEvent = new Event(
+                    now, EventType.ARRIVAL, nextCenter, job, null);
 
-	@Override
-	public Object doSample() {
-		return null;
-	}
+            eventQueue.add(arrivalEvent);
+        }
 
-	private void scheduleDepartureEvent(
-			double now, Job job, EventQueue eventQueue) {
+        if (jobQueue.isEmpty()) {
+            activeServer = false;
+            return;
+        }
 
-		double svc = serviceProcess.getService();
-		Event departureEvent = new Event(
-				now + svc, EventType.DEPARTURE, this, job, null);
+        job = jobQueue.remove();
 
-		eventQueue.add(departureEvent);
-	}
+        scheduleDepartureEvent(now, job, eventQueue);
+    }
+
+    @Override
+    public Object doSample() {
+        Map<String, Number> metrics = new HashMap<>();
+
+        metrics.put("Total", this.numJobsInNode);
+        metrics.put("Queue", this.jobQueue.size());
+        // activeServer is booleano, we convert it to a number (1 or 0)
+        metrics.put("BusyServers", this.activeServer ? 1 : 0);
+
+        return metrics;
+    }
+
+    private void scheduleDepartureEvent(
+            double now, Job job, EventQueue eventQueue) {
+
+        double svc = serviceProcess.getService();
+        Event departureEvent = new Event(
+                now + svc, EventType.DEPARTURE, this, job, null);
+
+        eventQueue.add(departureEvent);
+    }
 }
 
