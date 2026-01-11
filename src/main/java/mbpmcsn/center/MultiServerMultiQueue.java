@@ -14,7 +14,7 @@ import mbpmcsn.entity.Job;
 import mbpmcsn.flowpolicy.FlowAssignmentPolicy;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.StatCollector;
-import mbpmcsn.stats.OnSamplingCallback;
+import mbpmcsn.stats.SampleCollector;
 
 /**
  * m server, where each server has its own dedicated queue
@@ -35,7 +35,7 @@ public class MultiServerMultiQueue extends Center {
             ServiceProcess serviceProcess,
             NetworkRoutingPoint networkRoutingPoint,
             StatCollector statCollector,
-            OnSamplingCallback onSamplingCallback,
+            SampleCollector sampleCollector,
             int numFlows,
             FlowAssignmentPolicy flowAssignmentPolicy) {
 
@@ -45,7 +45,7 @@ public class MultiServerMultiQueue extends Center {
                 serviceProcess,
                 networkRoutingPoint,
                 statCollector,
-                onSamplingCallback
+        		sampleCollector
         );
 
         this.flowAssignmentPolicy = flowAssignmentPolicy;
@@ -57,7 +57,6 @@ public class MultiServerMultiQueue extends Center {
 
     @Override
     public void onArrival(Event event, EventQueue eventQueue) {
-
         double now = eventQueue.getCurrentClock();
         collectTimeStats(now);
 
@@ -88,7 +87,6 @@ public class MultiServerMultiQueue extends Center {
 
     @Override
     public void onDeparture(Event event, EventQueue eventQueue) {
-
         double now = eventQueue.getCurrentClock();
         collectTimeStats(now);
 

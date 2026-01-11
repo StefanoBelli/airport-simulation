@@ -31,11 +31,6 @@ public final class ImprovedSimulationModel extends SimulationModel {
     }
 
     @Override
-    protected final void createRoutingLogic() {
-
-    }
-
-    @Override
     protected final void createArrivalProcess() {
 
     }

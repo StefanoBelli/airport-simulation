@@ -31,14 +31,12 @@ public abstract class SimulationModel {
         this.sampleCollector = sampleCollector;
 
         createServiceGenerators(approxServicesAsExp);
-        createRoutingLogic();
         createArrivalProcess();
         createCenters();
         collectAllCenters();
     }
 
     protected abstract void createServiceGenerators(boolean hasToApproxToExpSvc);
-    protected abstract void createRoutingLogic();
     protected abstract void createArrivalProcess();
     protected abstract void createCenters();
     protected abstract void collectAllCenters();

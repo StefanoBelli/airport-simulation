@@ -17,10 +17,21 @@ public class Sample {
         this.value = value;
     }
 
-    public double getTimestamp() { return timestamp; }
-    public String getCenterName() { return centerName; }
-    public String getMetric() { return metric; }
-    public double getValue() { return value; }
+    public double getTimestamp() { 
+    	return timestamp; 
+    }
+
+    public String getCenterName() { 
+    	return centerName; 
+    }
+
+    public String getMetric() { 
+    	return metric; 
+    }
+
+    public double getValue() { 
+    	return value; 
+    }
 
     @Override
     public String toString() {

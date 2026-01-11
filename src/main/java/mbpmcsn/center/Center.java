@@ -6,7 +6,7 @@ import mbpmcsn.event.Event;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.StatCollector;
-import mbpmcsn.stats.OnSamplingCallback;
+import mbpmcsn.stats.SampleCollector;
 import mbpmcsn.entity.Job;
 
 /*
@@ -21,7 +21,7 @@ public abstract class Center {
 	protected final ServiceProcess serviceProcess;
 	private final NetworkRoutingPoint networkRoutingPoint;
 	protected final StatCollector statCollector;
-	private final OnSamplingCallback onSamplingCallback;
+	private final SampleCollector sampleCollector;
 
 	protected long numJobsInNode;
 	protected double lastUpdateTime;
@@ -32,14 +32,14 @@ public abstract class Center {
 			ServiceProcess serviceProcess, 
 			NetworkRoutingPoint networkRoutingPoint,
 			StatCollector statCollector,
-			OnSamplingCallback onSamplingCallback) {
+			SampleCollector sampleCollector) {
 
 		this.id = id;
 		this.name = name;
 		this.serviceProcess = serviceProcess;
 		this.networkRoutingPoint = networkRoutingPoint;
 		this.statCollector = statCollector;
-		this.onSamplingCallback = onSamplingCallback;
+		this.sampleCollector = sampleCollector;
 	}
 
 	protected void collectTimeStats(double currentClock) {
@@ -70,10 +70,10 @@ public abstract class Center {
 
 	/* called by event handler */
 	public final void onSampling(Event event, EventQueue eventQueue) {
-		if(onSamplingCallback == null) {
+		if(sampleCollector == null) {
 			String err = 
 				"sample event received, " + 
-				"but no callback provided at center " + 
+				"but no SampleCollector provided at center " + 
 				name;
 
 			throw new UnsupportedOperationException(err);
@@ -83,7 +83,7 @@ public abstract class Center {
 		if(data == null) {
 			String warn = 
 				"WARNING: sample event received, " + 
-				"has valid callback," +
+				"has valid SampleCollector," +
 				"but no data was provided by center " +
 				name +
 				"... ignoring.";
@@ -92,11 +92,10 @@ public abstract class Center {
 		}
 
 		/* nullable data, potential NullPointerException */
-		onSamplingCallback.collectSample(event, eventQueue, data);
+		sampleCollector.collectSample(event, eventQueue, data);
 	}
 
 	/* called when a sampling event is received: 
 	 * inheriting class must implement and return its specific data */
 	protected abstract Object doSample();
 }
-

@@ -10,7 +10,7 @@ import java.util.Map;
 public final class StatLogger {
 
     // PER ORA GESTIAMO COSI' SOLO PER DEBUGGARE
-    public void printReport(StatCollector sc) {
+    public static void printReport(StatCollector sc) {
         // Stampa Statistiche sui Passeggeri (Tempi di risposta, ecc.)
         System.out.println("\n--- POPULATION BASED (Tempi/Conteggi) ---");
         System.out.printf("%-30s | %12s | %8s\n", "Metric", "Mean", "Count");

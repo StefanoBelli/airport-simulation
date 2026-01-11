@@ -6,17 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/* similar logic as StatsCollector, just for samples
-//to be used within the OnSampleCallback for each specific center */
-public final class SampleCollector implements OnSamplingCallback {
-
+/* similar logic as StatsCollector, just for samples */
+public final class SampleCollector {
     private final List<Sample> samples = new ArrayList<>();
 
-    @Override
     @SuppressWarnings("unchecked")
     public void collectSample(Event event, EventQueue eventQueue, Object data) {
-
-        if (data == null) return;
+        if (data == null) {
+        	return;
+        }
 
         double now = eventQueue.getCurrentClock();
         String centerName = event.getTargetCenter().getName();
@@ -45,5 +43,4 @@ public final class SampleCollector implements OnSamplingCallback {
     public List<Sample> getSamples() {
         return samples;
     }
-
 }

@@ -12,7 +12,7 @@ import mbpmcsn.event.EventType;
 import mbpmcsn.entity.Job;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.StatCollector;
-import mbpmcsn.stats.OnSamplingCallback;
+import mbpmcsn.stats.SampleCollector;
 
 /**
  * m parallel servers and a single FIFO queue
@@ -33,7 +33,7 @@ public class MultiServerSingleQueue extends Center {
             ServiceProcess serviceProcess,
             NetworkRoutingPoint networkRoutingPoint,
             StatCollector statCollector,
-            OnSamplingCallback onSamplingCallback,
+            SampleCollector sampleCollector,
             int numServers) {
 
         super(
@@ -42,7 +42,7 @@ public class MultiServerSingleQueue extends Center {
                 serviceProcess,
                 networkRoutingPoint,
                 statCollector,
-                onSamplingCallback
+        		sampleCollector
         );
 
         this.numServers = numServers;
@@ -50,7 +50,6 @@ public class MultiServerSingleQueue extends Center {
 
     @Override
     public void onArrival(Event event, EventQueue eventQueue) {
-
         double now = eventQueue.getCurrentClock();
         collectTimeStats(now);
 
@@ -70,7 +69,6 @@ public class MultiServerSingleQueue extends Center {
 
     @Override
     public void onDeparture(Event event, EventQueue eventQueue) {
-
         double now = eventQueue.getCurrentClock();
         collectTimeStats(now);
 

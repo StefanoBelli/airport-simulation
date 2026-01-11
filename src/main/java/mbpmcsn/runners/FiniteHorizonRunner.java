@@ -1,11 +1,14 @@
 package mbpmcsn.runners;
 
+import java.util.List;
+
 import mbpmcsn.center.Center;
 import mbpmcsn.core.SimulationModel;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.event.EventType;
 import mbpmcsn.event.Event;
 import mbpmcsn.stats.StatCollector;
+import mbpmcsn.stats.Sample;
 import mbpmcsn.stats.SampleCollector;
 import mbpmcsn.desbook.Rngs;
 import mbpmcsn.runners.smbuilders.SimulationModelBuilder;
@@ -74,35 +77,41 @@ public final class FiniteHorizonRunner implements Runner {
 			simulationModel.processEvent(e);
 		}
 
+		printSimThings();
+	}
+
+	private void printSimThings() {
 		// PER ORA GESTIAMO COSI' SOLO PER DEBUGGARE
 		System.out.println("\n--- Simulazione Terminata ---");
-		StatLogger logger = new StatLogger();
-		logger.printReport(statCollector);
+
+		StatLogger.printReport(statCollector);
+
+		List<Sample> samples = sampleCollector.getSamples();
 
 		// Feedback visivo sui sample raccolti
-		System.out.println("[INFO] Campioni raccolti per analisi temporale: " + sampleCollector.getSamples().size());
+		System.out.println("[INFO] Campioni raccolti per analisi temporale: " + samples.size());
 
 		// --- DEBUG: STAMPIAMO I CAMPIONI PER VEDERE SE ESISTONO ---
 		System.out.println("\n--- ANTEPRIMA DATI CAMPIONATI (SampleCollector) ---");
 		System.out.println("Time; Center; Metric; Value");
 
 		// Stampiamo solo i primi 40 per non intasare tutto
-		int count = 0;
-		for (mbpmcsn.stats.Sample s : sampleCollector.getSamples()) {
-			System.out.println(s.toString()); // Il toString() l'abbiamo programmato per uscire come CSV
-			count++;
-			if (count >= 40) break;
+		for(int i = 0; i < 40; i++) {
+			System.out.println(samples.get(i));
 		}
-		System.out.println("... (altri " + (sampleCollector.getSamples().size() - 40) + " campioni nascosti) ...");
+
+		System.out.println("... (altri " + (samples.size() - 40) + " campioni nascosti) ...");
 	}
 
 	private void initSamplingEvents() {
-		if (samplingInterval <= 0) return;
+		if (samplingInterval <= 0) {
+			return;
+		}
 
 		// starts from interval (es. 300s), continues until < simulationTime, increment interval
 		for (double t = samplingInterval; t < simulationTime; t += samplingInterval) {
 			// schedule SAMPLING events for every Center
-			for (Center c : simulationModel.getCenters()) {
+			for (final Center c : simulationModel.getCenters()) {
 				Event sampleEvent = new Event(t, EventType.SAMPLING, c, null, null);
 				eventQueue.add(sampleEvent);
 			}

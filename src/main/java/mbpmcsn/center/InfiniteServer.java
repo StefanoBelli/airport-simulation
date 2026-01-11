@@ -7,7 +7,7 @@ import mbpmcsn.event.EventType;
 import mbpmcsn.entity.Job;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.StatCollector;
-import mbpmcsn.stats.OnSamplingCallback;
+import mbpmcsn.stats.SampleCollector;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -23,12 +23,15 @@ public class InfiniteServer extends Center {
 			ServiceProcess serviceProcess, 
 			NetworkRoutingPoint networkRoutingPoint,
 			StatCollector statCollector,
-			OnSamplingCallback onSamplingCallback) {
+			SampleCollector sampleCollector) {
 
 		super(
-				id, name, serviceProcess, 
-				networkRoutingPoint, statCollector, 
-				onSamplingCallback
+				id, 
+				name, 
+				serviceProcess, 
+				networkRoutingPoint, 
+				statCollector, 
+				sampleCollector
 		);
 	}
 

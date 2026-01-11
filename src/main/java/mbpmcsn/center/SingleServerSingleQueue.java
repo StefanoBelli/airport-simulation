@@ -12,7 +12,7 @@ import mbpmcsn.event.EventType;
 import mbpmcsn.entity.Job;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.StatCollector;
-import mbpmcsn.stats.OnSamplingCallback;
+import mbpmcsn.stats.SampleCollector;
 
 /**
  * 1 server and a single FIFO queue
@@ -28,7 +28,7 @@ public class SingleServerSingleQueue extends Center {
             ServiceProcess serviceProcess,
             NetworkRoutingPoint networkRoutingPoint,
             StatCollector statCollector,
-            OnSamplingCallback onSamplingCallback) {
+            SampleCollector sampleCollector) {
 
         super(
                 id,
@@ -36,13 +36,12 @@ public class SingleServerSingleQueue extends Center {
                 serviceProcess,
                 networkRoutingPoint,
                 statCollector,
-                onSamplingCallback
+        		sampleCollector
         );
     }
 
     @Override
     public void onArrival(Event event, EventQueue eventQueue) {
-
         double now = eventQueue.getCurrentClock();
         collectTimeStats(now);
 
@@ -62,7 +61,6 @@ public class SingleServerSingleQueue extends Center {
 
     @Override
     public void onDeparture(Event event, EventQueue eventQueue) {
-
         double now = eventQueue.getCurrentClock();
         collectTimeStats(now);
 
@@ -96,7 +94,7 @@ public class SingleServerSingleQueue extends Center {
 
         metrics.put("Total", this.numJobsInNode);
         metrics.put("Queue", this.jobQueue.size());
-        // activeServer is booleano, we convert it to a number (1 or 0)
+        // activeServer is boolean, we convert it to a number (1 or 0)
         metrics.put("BusyServers", this.activeServer ? 1 : 0);
 
         return metrics;

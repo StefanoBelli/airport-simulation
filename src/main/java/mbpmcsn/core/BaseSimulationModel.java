@@ -42,14 +42,8 @@ public final class BaseSimulationModel extends SimulationModel {
 
     private List<Center> centers;
 
-    /* routing */
+    /* entry point routing */
     private NetworkRoutingPoint routingIngresso;
-    private NetworkRoutingPoint routingCheckIn;
-    private NetworkRoutingPoint routingVarchi;
-    private NetworkRoutingPoint routingPrep;
-    private NetworkRoutingPoint routingXRay;
-    private NetworkRoutingPoint routingTrace;
-    private NetworkRoutingPoint routingRecupero;
 
     /* service generators */
     private RandomVariateGenerator rvgCheckIn;
@@ -94,29 +88,6 @@ public final class BaseSimulationModel extends SimulationModel {
     }
 
     @Override
-    protected final void createRoutingLogic() {
-        /*
-
-        C'è un problema:
-        - Per creare il Check-In, devi passargli il routing nel costruttore
-        (quindi il routing deve esistere prima del Centro)
-        - Per creare il routing (es. FixedRouting), devi passargli il centro destinazione
-        (es. Varchi) nel costruttore. (quindi il centro deve esistere prima del Routing)
-        - inoltre il next centro deve sempre esistere e dobbiamo metterli a rotroso
-
-        routingIngresso = new EntryRouting(centerCheckIn, centerVarchi, STREAM_ARRIVALS);
-        routingCheckIn  = new FixedRouting(centerVarchi);
-        routingVarchi   = new FixedRouting(centerPrep);
-        routingPrep     = new FixedRouting(centerXRay);
-        routingXRay     = new XRayRouting(centerTrace, centerRecupero, STREAM_S4_ROUTING);
-        routingTrace    = new TraceRouting(centerRecupero, STREAM_S5_ROUTING);
-        routingRecupero = new FixedRouting(null);
-
-         */
-
-    }
-
-    @Override
     protected final void createArrivalProcess() {
     	RandomVariateGenerator rvgArrival = new ExponentialGenerator(ARRIVAL_MEAN_TIME);
         arrivalProcess = new ArrivalProcess(rvgArrival, rngs, STREAM_ARRIVALS);
@@ -124,7 +95,6 @@ public final class BaseSimulationModel extends SimulationModel {
 
     @Override
     protected final void createCenters() {
-
         // 6. Recupero Oggetti
         ServiceProcess sp6 = new ServiceProcess(rvgRecupero, rngs, STREAM_S6_SERVICE);
         NetworkRoutingPoint routingRecupero = new FixedRouting(null);
