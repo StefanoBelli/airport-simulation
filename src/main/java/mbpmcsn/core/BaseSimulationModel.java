@@ -15,6 +15,7 @@ import mbpmcsn.flowpolicy.*;
 import mbpmcsn.desbook.Rngs;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.stats.StatCollector;
+import mbpmcsn.stats.SampleCollector;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,12 +63,14 @@ public final class BaseSimulationModel extends SimulationModel {
     		Rngs rngs, 
     		EventQueue eventQueue, 
     		StatCollector statCollector,
+    		SampleCollector sampleCollector,
     		boolean approxServicesAsExp) {
 
     	super(
     			rngs,
     			eventQueue,
     			statCollector,
+    			sampleCollector,
     			approxServicesAsExp);
     }
 
@@ -216,37 +219,6 @@ public final class BaseSimulationModel extends SimulationModel {
 
 		eventQueue.add(arrivalEvent);
 	}
-
-	/* this should be moved to the runner */
-    // run for a defined time
-    public void run(double simulationTime) {
-
-        statCollector.clear();
-        eventQueue.clear();
-
-        // first arrival
-        planNextArrival();
-
-        // Next-Event loop
-        while (eventQueue.getCurrentClock() < simulationTime) {
-            if (eventQueue.isEmpty()) {
-                break;
-            }
-
-            // extract the upcoming event and process
-            Event e = eventQueue.pop();
-
-            // new arrival
-            if (e.getType() == EventType.ARRIVAL) {
-                if (e.getTime() == e.getJob().getArrivalTime()) {
-                    planNextArrival();
-                }
-            }
-
-            processEvent(e);
-        }
-    }
-    /*--------------------------------*/
 
     @Override
     public final List<Center> getCenters() {

@@ -7,6 +7,7 @@ import mbpmcsn.center.Center;
 import mbpmcsn.event.Event;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.stats.StatCollector;
+import mbpmcsn.stats.SampleCollector;
 import mbpmcsn.desbook.Rngs;
 
 public abstract class SimulationModel {
@@ -14,17 +15,20 @@ public abstract class SimulationModel {
     /* core components */
     protected final EventQueue eventQueue;
     protected final StatCollector statCollector;
+    protected final SampleCollector sampleCollector;
     protected final Rngs rngs;
 
     protected SimulationModel(
     		Rngs rngs, 
     		EventQueue eventQueue, 
     		StatCollector statCollector,
+    		SampleCollector sampleCollector,
     		boolean approxServicesAsExp) {
 
         this.rngs = rngs;
         this.eventQueue = eventQueue;
         this.statCollector = statCollector;
+        this.sampleCollector = sampleCollector;
 
         createServiceGenerators(approxServicesAsExp);
         createRoutingLogic();

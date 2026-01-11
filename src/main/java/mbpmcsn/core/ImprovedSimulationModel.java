@@ -6,18 +6,21 @@ import mbpmcsn.center.Center;
 import mbpmcsn.desbook.Rngs;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.stats.StatCollector;
+import mbpmcsn.stats.SampleCollector;
 
 public final class ImprovedSimulationModel extends SimulationModel {
 	public ImprovedSimulationModel(
     		Rngs rngs, 
     		EventQueue eventQueue, 
     		StatCollector statCollector,
+    		SampleCollector sampleCollector,
     		boolean approxServicesAsExp) {
 
     	super(
     			rngs,
     			eventQueue,
     			statCollector,
+    			sampleCollector,
     			approxServicesAsExp
     	);
     }
