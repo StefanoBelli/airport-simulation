@@ -23,6 +23,22 @@ public abstract class Center {
 	protected final StatCollector statCollector;
 	private final SampleCollector sampleCollector;
 
+	protected final String statTsKey;
+	protected final String statTqKey;
+	protected final String statSKey;
+	protected final String statNsKey;
+	protected final String statNqKey;
+	protected final String statXKey;
+
+	protected static final String sampleTsKey = "TimeTotal";
+	protected static final String sampleTqKey = "TimeQueue";
+	protected static final String sampleSKey = "TimeService";
+	protected static final String sampleNsKey = "NumTotal";
+	protected static final String sampleNqKey = "NumQueue";
+	protected static final String sampleXKey = "Utilization";
+
+	protected static final String statSysTsKey = "SystemResponseTime_Success";
+
 	protected long numJobsInNode;
 	protected double lastUpdateTime;
 
@@ -40,14 +56,70 @@ public abstract class Center {
 		this.networkRoutingPoint = networkRoutingPoint;
 		this.statCollector = statCollector;
 		this.sampleCollector = sampleCollector;
+
+		statTsKey = "Ts_" + name;
+		statTqKey = "Tq_" + name;
+		statSKey = "S_" + name;
+		statNsKey = "Ns_" + name;
+		statNqKey = "Nq_" + name;
+		statXKey = "X_" + name;
 	}
 
-	protected void collectTimeStats(double currentClock) {
+	/* specify here stats you want to collect */
+	protected abstract void timeStats(double duration);
+
+	/* call this method when you need to collect */
+	protected final void collectTimeStats(double currentClock) {
 	 	double duration = currentClock - lastUpdateTime;
-	 	statCollector.updateArea("N_" + name, numJobsInNode, duration);
+	 	timeStats(duration);
 	 	lastUpdateTime = currentClock;
 	}
 
+	/* helpers, you just need to set things accordingly in job */
+	protected final void sampleResponseTime(Job job) {
+		double queuedTime = job.getLastQueuedTime();
+		double endServiceTime = job.getLastEndServiceTime();
+
+		statCollector.addSample(statTsKey, endServiceTime - queuedTime);
+	}
+
+	protected final void sampleServiceTime(Job job) {
+		double endServiceTime = job.getLastEndServiceTime();
+		double startServiceTime = job.getLastStartServiceTime();
+
+		statCollector.addSample(statSKey, endServiceTime - startServiceTime);
+	}
+
+	protected final void sampleQueueTime(Job job) {
+		double queuedTime = job.getLastQueuedTime();
+		double startServiceTime = job.getLastStartServiceTime();
+
+		statCollector.addSample(statTqKey, startServiceTime - queuedTime);
+	}
+
+	protected final void sampleSystemResponseTimeSuccess(double now, Job job) {
+		double responseTime = now - job.getArrivalTime();
+
+		statCollector.addSample(statSysTsKey, responseTime);
+	}
+
+	protected final double getResponseTimeMeanSoFar() {
+		return statCollector.getPopulationMean(statTsKey);
+	}
+
+	protected final double getQueueTimeMeanSoFar() {
+		return statCollector.getPopulationMean(statTqKey);
+	}
+
+	protected final double getServiceTimeMeanSoFar() {
+		return statCollector.getPopulationMean(statSKey);
+	}
+
+	protected final double getSystemResponseTimeSuccessMeanSoFar() {
+		return statCollector.getPopulationMean(statSysTsKey);
+	}
+
+	/* common properties  */
 	public int getId() {
 		return id;
 	}
@@ -56,7 +128,7 @@ public abstract class Center {
 		return name;
 	}
 
-	/* wrapper method */
+	/* helper to use the networkRoutingPoint */
 	protected final Center getNextCenter(Job job) {
 		Rngs rngs = serviceProcess.getRngs();
 		return networkRoutingPoint.getNextCenter(rngs, job);

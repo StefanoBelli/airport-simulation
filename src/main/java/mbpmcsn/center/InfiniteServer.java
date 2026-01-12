@@ -45,6 +45,11 @@ public class InfiniteServer extends Center {
 		double svc = serviceProcess.getService();
 		Job job = event.getJob();
 
+		job.setLastQueuedTime(now);
+		job.setLastStartServiceTime(now);
+
+		sampleQueueTime(job);
+
 		Event departureEvent = new Event(
 				now + svc, EventType.DEPARTURE, this, job, null);
 
@@ -59,12 +64,16 @@ public class InfiniteServer extends Center {
 		numJobsInNode--;
 
 		Job job = event.getJob();
+		job.setLastEndServiceTime(now);
+
+		sampleResponseTime(job);
+		sampleServiceTime(job);
+
 		Center nextCenter = getNextCenter(job);
 
 		// if no following center --> job exit -> store Response Time
 		if (nextCenter == null) {
-			double responseTime = now - job.getArrivalTime();
-			statCollector.addSample("SystemResponseTime_Success", responseTime);
+			sampleSystemResponseTimeSuccess(now, job);
 		} else {
 			Event arrivalEvent = new Event(now, EventType.ARRIVAL, nextCenter, job, null);
 			eventQueue.add(arrivalEvent);
@@ -75,15 +84,26 @@ public class InfiniteServer extends Center {
 	public Object doSample() {
 		Map<String, Number> metrics = new HashMap<>();
 
-		metrics.put("Total", this.numJobsInNode);
+		metrics.put(sampleNsKey, numJobsInNode);
+		metrics.put(sampleNqKey, 0);
+		metrics.put(sampleXKey, numJobsInNode);
 
-		// queue is always 0
-		metrics.put("Queue", 0);
+		metrics.put(sampleTsKey, getResponseTimeMeanSoFar());
+		metrics.put(sampleTqKey, getQueueTimeMeanSoFar());
+		metrics.put(sampleSKey, getServiceTimeMeanSoFar());
 
-		// coincides with the total
-		metrics.put("Service", this.numJobsInNode);
+		//this can be done by one center only, or get multiple repeated entries
+		//for same time from multiple centers
+		metrics.put(statSysTsKey, getSystemResponseTimeSuccessMeanSoFar());
 
 		return metrics;
+	}
+
+	@Override
+	protected void timeStats(double duration) {
+		statCollector.updateArea(statNsKey, numJobsInNode, duration);
+		statCollector.updateArea(statNqKey, 0, duration);
+		statCollector.updateArea(statXKey, numJobsInNode, duration);
 	}
 }
 

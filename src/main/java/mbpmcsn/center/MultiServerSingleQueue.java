@@ -20,107 +20,122 @@ import mbpmcsn.stats.SampleCollector;
  */
 
 public class MultiServerSingleQueue extends Center {
-    private final int numServers;
+	private final int numServers;
 
-    /* maybe this is not needed but makes it more clear */
-    private int numActiveServers;
+	/* maybe this is not needed but makes it more clear */
+	private int numActiveServers;
 
-    private Queue<Job> jobQueue = new LinkedList<>();
+	private Queue<Job> jobQueue = new LinkedList<>();
 
-    public MultiServerSingleQueue(
-            int id,
-            String name,
-            ServiceProcess serviceProcess,
-            NetworkRoutingPoint networkRoutingPoint,
-            StatCollector statCollector,
-            SampleCollector sampleCollector,
-            int numServers) {
+	public MultiServerSingleQueue(
+			int id,
+			String name,
+			ServiceProcess serviceProcess,
+			NetworkRoutingPoint networkRoutingPoint,
+			StatCollector statCollector,
+			SampleCollector sampleCollector,
+			int numServers) {
 
-        super(
-                id,
-                name,
-                serviceProcess,
-                networkRoutingPoint,
-                statCollector,
-        		sampleCollector
-        );
+		super(
+				id,
+				name,
+				serviceProcess,
+				networkRoutingPoint,
+				statCollector,
+				sampleCollector
+		);
 
-        this.numServers = numServers;
-    }
+		this.numServers = numServers;
+	}
 
-    @Override
-    public void onArrival(Event event, EventQueue eventQueue) {
-        double now = eventQueue.getCurrentClock();
-        collectTimeStats(now);
+	@Override
+	public void onArrival(Event event, EventQueue eventQueue) {
+		double now = eventQueue.getCurrentClock();
+		collectTimeStats(now);
 
-        numJobsInNode++;
+		numJobsInNode++;
 
-        Job job = event.getJob();
+		Job job = event.getJob();
+		job.setLastQueuedTime(now);
 
-        if (numActiveServers == numServers) {
-            jobQueue.add(job);
-            return;
-        }
+		if (numActiveServers == numServers) {
+			jobQueue.add(job);
+			return;
+		}
 
-        numActiveServers++;
+		numActiveServers++;
 
-        scheduleDepartureEvent(now, job, eventQueue);
-    }
+		scheduleDepartureEvent(now, job, eventQueue);
+	}
 
-    @Override
-    public void onDeparture(Event event, EventQueue eventQueue) {
-        double now = eventQueue.getCurrentClock();
-        collectTimeStats(now);
+	@Override
+	public void onDeparture(Event event, EventQueue eventQueue) {
+		double now = eventQueue.getCurrentClock();
+		collectTimeStats(now);
 
-        numJobsInNode--;
+		numJobsInNode--;
 
-        Job job = event.getJob();
-        Center nextCenter = getNextCenter(job);
+		Job job = event.getJob();
+		job.setLastEndServiceTime(now);
 
-        if (nextCenter == null) {
-            statCollector.addSample("SystemResponseTime_Success", now - job.getArrivalTime());
-        } else {
-            Event arrivalEvent = new Event(
-                    now, EventType.ARRIVAL, nextCenter, job, null);
+		sampleServiceTime(job);
+		sampleResponseTime(job);
 
-            eventQueue.add(arrivalEvent);
-        }
+		Center nextCenter = getNextCenter(job);
 
-        if (jobQueue.isEmpty()) {
-            numActiveServers--;
-            return;
-        }
+		if (nextCenter == null) {
+			sampleSystemResponseTimeSuccess(now, job);
+		} else {
+			Event arrivalEvent = new Event(
+					now, EventType.ARRIVAL, nextCenter, job, null);
 
-        job = jobQueue.remove();
+			eventQueue.add(arrivalEvent);
+		}
 
-        scheduleDepartureEvent(now, job, eventQueue);
-    }
+		if (jobQueue.isEmpty()) {
+			numActiveServers--;
+			return;
+		}
 
-    @Override
-    public Object doSample() {
-        Map<String, Number> metrics = new HashMap<>();
+		job = jobQueue.remove();
 
-        // total passengers in the center (queue + service)
-        metrics.put("Total", this.numJobsInNode);
+		scheduleDepartureEvent(now, job, eventQueue);
+	}
 
-        // passengers in the queue
-        metrics.put("Queue", this.jobQueue.size());
+	private void scheduleDepartureEvent(
+			double now, Job job, EventQueue eventQueue) {
 
-        // number of busy server
-        metrics.put("BusyServers", this.numActiveServers);
+		job.setLastStartServiceTime(now);
 
-        return metrics;
-    }
+		sampleQueueTime(job);
 
-    private void scheduleDepartureEvent(
-            double now, Job job, EventQueue eventQueue) {
+		double svc = serviceProcess.getService();
 
-        double svc = serviceProcess.getService();
+		Event departureEvent = new Event(
+				now + svc, EventType.DEPARTURE, this, job, null);
 
-        Event departureEvent = new Event(
-                now + svc, EventType.DEPARTURE, this, job, null);
+		eventQueue.add(departureEvent);
+	}
 
-        eventQueue.add(departureEvent);
-    }
+	@Override
+	public Object doSample() {
+		Map<String, Number> metrics = new HashMap<>();
+
+		metrics.put(sampleNsKey, numJobsInNode);
+		metrics.put(sampleNqKey, numJobsInNode - numActiveServers);
+		metrics.put(sampleXKey, numActiveServers);
+
+		metrics.put(sampleTsKey, getResponseTimeMeanSoFar());
+		metrics.put(sampleTqKey, getQueueTimeMeanSoFar());
+		metrics.put(sampleSKey, getServiceTimeMeanSoFar());
+
+		return metrics;
+	}
+
+	@Override
+	protected void timeStats(double duration) {
+		statCollector.updateArea(statNsKey, numJobsInNode, duration);
+		statCollector.updateArea(statNqKey, numJobsInNode - numActiveServers, duration);
+		statCollector.updateArea(statXKey, numActiveServers, duration);
+	}
 }
-

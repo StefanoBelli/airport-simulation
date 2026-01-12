@@ -6,6 +6,10 @@ public final class Job {
 
     private final int id;
     private final double arrivalTime; // entry time in the system
+    
+    private double lastQueuedTime;
+    private double lastStartServiceTime;
+    private double lastEndServiceTime;
 
     private boolean checkedBaggage;
     private boolean securityCheckRequested;
@@ -49,6 +53,30 @@ public final class Job {
 
     public void setSecurityCheckFailed(boolean securityCheckFailed) {
     	this.securityCheckFailed = securityCheckFailed;
+    }
+
+    public double getLastQueuedTime() {
+    	return lastQueuedTime;
+    }
+
+    public void setLastQueuedTime(double lastQueuedTime) {
+    	this.lastQueuedTime = lastQueuedTime;
+    }
+
+    public double getLastStartServiceTime() {
+    	return lastStartServiceTime;
+    }
+
+    public void setLastStartServiceTime(double lastStartServiceTime) {
+    	this.lastStartServiceTime = lastStartServiceTime;
+    }
+
+    public double getLastEndServiceTime() {
+    	return lastEndServiceTime;
+    }
+
+    public void setLastEndServiceTime(double lastEndServiceTime) {
+    	this.lastEndServiceTime = lastEndServiceTime;
     }
 
     @Override

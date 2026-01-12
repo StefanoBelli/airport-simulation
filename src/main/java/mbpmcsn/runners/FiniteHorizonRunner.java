@@ -96,7 +96,7 @@ public final class FiniteHorizonRunner implements Runner {
 		System.out.println("Time; Center; Metric; Value");
 
 		// Stampiamo solo i primi 40 per non intasare tutto
-		for(int i = 0; i < 40; i++) {
+		for(int i = 0; i < samples.size(); i++) {
 			System.out.println(samples.get(i));
 		}
 
