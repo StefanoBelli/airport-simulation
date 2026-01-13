@@ -15,12 +15,15 @@ import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
 
 /**
- * 1 server and a single FIFO queue
+ * Represents a G/G/1 Node: Single Server and a Single FIFO Queue
+ * - Capacity: 1
+ * - State Variable (X): Binary (0 = Idle, 1 = Busy)
+ * - Logic: If server is busy, queue. If idle, serve
  */
 
 public class SingleServerSingleQueue extends Center {
-	private boolean activeServer;
-	private Queue<Job> jobQueue = new LinkedList<>();
+	private boolean activeServer; // binary state
+	private Queue<Job> jobQueue = new LinkedList<>(); // FIFO waiting line
 
 	public SingleServerSingleQueue(
 			int id,
@@ -43,18 +46,24 @@ public class SingleServerSingleQueue extends Center {
 	@Override
 	public void onArrival(Event event, EventQueue eventQueue) {
 		double now = eventQueue.getCurrentClock();
+
+		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
 
+		// 2. UPDATE GLOBAL COUNTER
 		numJobsInNode++;
 
+		// 3. JOB TIMESTAMPING
 		Job job = event.getJob();
-		job.setLastQueuedTime(now);
+		job.setLastQueuedTime(now); // T_in_queue
 
+		// 4. RESOURCE CHECK
 		if (activeServer) {
 			jobQueue.add(job);
 			return;
 		}
 
+		// Resource IDLE: activate immediately
 		activeServer = true;
 
 		scheduleDepartureEvent(now, job, eventQueue);
@@ -63,16 +72,21 @@ public class SingleServerSingleQueue extends Center {
 	@Override
 	public void onDeparture(Event event, EventQueue eventQueue) {
 		double now = eventQueue.getCurrentClock();
+
+		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
 
+		// 2. UPDATE GLOBAL COUNTER
 		numJobsInNode--;
 
+		// 3. JOB STATS RECORDING
 		Job job = event.getJob();
 		job.setLastEndServiceTime(now);
 
 		sampleServiceTime(job);
 		sampleResponseTime(job);
 
+		// 4. ROUTING
 		Center nextCenter = getNextCenter(job);
 
 		if (nextCenter == null) {
@@ -84,6 +98,7 @@ public class SingleServerSingleQueue extends Center {
 			eventQueue.add(arrivalEvent);
 		}
 
+		// 5. RESOURCE MANAGEMENT
 		if (jobQueue.isEmpty()) {
 			activeServer = false;
 			return;
@@ -99,7 +114,7 @@ public class SingleServerSingleQueue extends Center {
 
 		job.setLastStartServiceTime(now);
 
-		sampleQueueTime(job);
+		sampleQueueTime(job); // Tq = T_start - T_in_queue
 
 		double svc = serviceProcess.getService();
 		Event departureEvent = new Event(
@@ -114,8 +129,8 @@ public class SingleServerSingleQueue extends Center {
 		int numJobsInServer = getNumJobsInServer();
 
 		metrics.put(sampleNsKey, numJobsInNode);
-		metrics.put(sampleNqKey, numJobsInNode - numJobsInServer);
-		metrics.put(sampleXKey, getNumJobsInServer());
+		metrics.put(sampleNqKey, numJobsInNode - numJobsInServer); // Nq = N - X
+		metrics.put(sampleXKey, getNumJobsInServer()); // X = 0 or 1
 
 		metrics.put(sampleTsKey, getResponseTimeMeanSoFar());
 		metrics.put(sampleTqKey, getQueueTimeMeanSoFar());
@@ -131,8 +146,11 @@ public class SingleServerSingleQueue extends Center {
 	protected void timeStats(double duration) {
 		int numJobsInServer = getNumJobsInServer();
 
+		// E[Ns]
 		statCollector.updateArea(statNsKey, numJobsInNode, duration);
+		// E[Nq] = N - X
 		statCollector.updateArea(statNqKey, numJobsInNode - numJobsInServer, duration);
+		// E[X] (Utilization)
 		statCollector.updateArea(statXKey, numJobsInServer, duration);
 	}
 

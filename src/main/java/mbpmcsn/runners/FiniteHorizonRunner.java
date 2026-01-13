@@ -81,26 +81,43 @@ public final class FiniteHorizonRunner implements Runner {
 	}
 
 	private void printSimThings() {
-		// PER ORA GESTIAMO COSI' SOLO PER DEBUGGARE
-		System.out.println("\n--- Simulazione Terminata ---");
+		System.out.println("\n######################################################################################################################################");
+		System.out.println("              FINE SIMULAZIONE (ORIZZONTE FINITO)                  ");
+		System.out.println("######################################################################################################################################");
+		System.out.printf("Durata Simulazione:       %10.2f sec\n", simulationTime);
+		System.out.printf("Intervallo Campionamento: %10.2f sec\n", samplingInterval);
 
 		StatLogger.printReport(statCollector);
 
 		List<Sample> samples = sampleCollector.getSamples();
+		int totalSamples = samples.size();
 
-		// Feedback visivo sui sample raccolti
-		System.out.println("[INFO] Campioni raccolti per analisi temporale: " + samples.size());
+		System.out.println("\n--- DATI TEMPORALI (Sampling) -----------------------------------------------");
+		System.out.printf("Totale campioni raccolti: %d\n", totalSamples);
+		System.out.println("");
 
-		// --- DEBUG: STAMPIAMO I CAMPIONI PER VEDERE SE ESISTONO ---
-		System.out.println("\n--- ANTEPRIMA DATI CAMPIONATI (SampleCollector) ---");
-		System.out.println("Time; Center; Metric; Value");
+		if (totalSamples > 0) {
+			System.out.printf("%-10s | %-20s | %-25s | %s\n", "Time", "Center", "Metric", "Value");
+			System.out.println("-----------------------------------------------------------------------------");
 
-		// Stampiamo solo i primi 40 per non intasare tutto
-		for(int i = 0; i < samples.size(); i++) {
-			System.out.println(samples.get(i));
+			for (int i = 0; i < totalSamples; i++) {
+				printPrettySample(samples.get(i));
+			}
+
+			System.out.println("-----------------------------------------------------------------------------");
+		} else {
+			System.out.println("(Nessun campione raccolto. Controlla samplingInterval)");
 		}
+		System.out.println("######################################################################################################################################\n");
+	}
 
-		System.out.println("... (altri " + (samples.size() - 40) + " campioni nascosti) ...");
+	// helper method to print a sample row nicely aligned
+	private void printPrettySample(Sample s) {
+		System.out.printf("%-10.2f | %-20s | %-25s | %.4f\n",
+				s.getTimestamp(),
+				s.getCenterName(),
+				s.getMetric(),
+				s.getValue());
 	}
 
 	private void initSamplingEvents() {
@@ -117,4 +134,6 @@ public final class FiniteHorizonRunner implements Runner {
 			}
 		}
 	}
+
+
 }

@@ -15,16 +15,21 @@ import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
 
 /**
- * m parallel servers and a single FIFO queue
- * jobs wait in the queue only if all m servers are busy
+ * Represents a G/G/m Node: 'm' parallel servers and a single shared FIFO queue
+ * - Capacity: 'm' (numServers)
+ * - Queue Discipline: FIFO (First-In-First-Out)
+ * - Logic: An arriving job enters service immediately if at least one server is IDLE
+ * 			Otherwise, it waits in the jobQueue
  */
 
 public class MultiServerSingleQueue extends Center {
-	private final int numServers;
 
-	/* maybe this is not needed but makes it more clear */
+	// total capacity of the node (m)
+	private final int numServers;
+	// number of busy servers (0 <= X <= m)
 	private int numActiveServers;
 
+	// shared Waiting Queue
 	private Queue<Job> jobQueue = new LinkedList<>();
 
 	public MultiServerSingleQueue(
@@ -50,19 +55,26 @@ public class MultiServerSingleQueue extends Center {
 
 	@Override
 	public void onArrival(Event event, EventQueue eventQueue) {
+
 		double now = eventQueue.getCurrentClock();
+
+		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
 
+		// 2. UPDATE GLOBAL COUNTER
 		numJobsInNode++;
 
+		// 3. JOB TIMESTAMPING
 		Job job = event.getJob();
-		job.setLastQueuedTime(now);
+		job.setLastQueuedTime(now); // T_in_queue
 
+		// 4. RESOURCE CHECK
 		if (numActiveServers == numServers) {
 			jobQueue.add(job);
 			return;
 		}
 
+		// 5. SERVER ACQUISITION
 		numActiveServers++;
 
 		scheduleDepartureEvent(now, job, eventQueue);
@@ -71,19 +83,25 @@ public class MultiServerSingleQueue extends Center {
 	@Override
 	public void onDeparture(Event event, EventQueue eventQueue) {
 		double now = eventQueue.getCurrentClock();
+
+		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
 
+		// 2. UPDATE GLOBAL COUNTER
 		numJobsInNode--;
 
+		// 3. JOB STATS RECORDING
 		Job job = event.getJob();
-		job.setLastEndServiceTime(now);
+		job.setLastEndServiceTime(now); // T_out
 
-		sampleServiceTime(job);
-		sampleResponseTime(job);
+		sampleServiceTime(job); // S = T_out - T_start_service
+		sampleResponseTime(job); // Ts = T_out - T_in_queue
 
+		// 4. ROUTING (
 		Center nextCenter = getNextCenter(job);
 
 		if (nextCenter == null) {
+			// EXIT FROM THE NODE: record Global System Response Time
 			sampleSystemResponseTimeSuccess(now, job);
 		} else {
 			Event arrivalEvent = new Event(
@@ -92,8 +110,9 @@ public class MultiServerSingleQueue extends Center {
 			eventQueue.add(arrivalEvent);
 		}
 
+		// 5. SERVER RELEASE / REALLOCATION LOGIC
 		if (jobQueue.isEmpty()) {
-			numActiveServers--;
+			numActiveServers--; // X decreases
 			return;
 		}
 
@@ -105,8 +124,10 @@ public class MultiServerSingleQueue extends Center {
 	private void scheduleDepartureEvent(
 			double now, Job job, EventQueue eventQueue) {
 
+		// record when the job leaves the queue and enters the server
 		job.setLastStartServiceTime(now);
 
+		// Tq = T_start_service - T_in_queue
 		sampleQueueTime(job);
 
 		double svc = serviceProcess.getService();
@@ -121,8 +142,11 @@ public class MultiServerSingleQueue extends Center {
 	public Object doSample() {
 		Map<String, Number> metrics = new HashMap<>();
 
+		// Ns: Total users
 		metrics.put(sampleNsKey, numJobsInNode);
+		// Nq: Users in queue = Total - Users being served
 		metrics.put(sampleNqKey, numJobsInNode - numActiveServers);
+		// X: Busy servers
 		metrics.put(sampleXKey, numActiveServers);
 
 		metrics.put(sampleTsKey, getResponseTimeMeanSoFar());
@@ -136,8 +160,11 @@ public class MultiServerSingleQueue extends Center {
 
 	@Override
 	protected void timeStats(double duration) {
+		// E[Ns]
 		statCollector.updateArea(statNsKey, numJobsInNode, duration);
+		// E[Nq] = N - X
 		statCollector.updateArea(statNqKey, numJobsInNode - numActiveServers, duration);
+		// E[X] (Busy Servers)
 		statCollector.updateArea(statXKey, numActiveServers, duration);
 	}
 }

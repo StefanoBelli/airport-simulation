@@ -3,13 +3,12 @@ package mbpmcsn.entity;
 public final class Job {
 
     private static int ID_COUNTER = 0;
-
     private final int id;
+
     private final double arrivalTime; // entry time in the system
-    
-    private double lastQueuedTime;
-    private double lastStartServiceTime;
-    private double lastEndServiceTime;
+    private double lastQueuedTime; // T_in_queue (arrival at center)
+    private double lastStartServiceTime; // T_start_service (service begins)
+    private double lastEndServiceTime; // T_out (departure from center)
 
     private boolean checkedBaggage;
     private boolean securityCheckRequested;

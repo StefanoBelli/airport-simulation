@@ -15,32 +15,36 @@ import mbpmcsn.entity.Job;
  */
 
 public abstract class Center {
+
 	protected final int id; // ID (es. Constants.ID_CHECKIN)
 	protected final String name;
 
 	protected final ServiceProcess serviceProcess;
 	private final NetworkRoutingPoint networkRoutingPoint;
-	protected final StatCollector statCollector;
-	private final SampleCollector sampleCollector;
+	protected final StatCollector statCollector; // accumulator for final averages
+	private final SampleCollector sampleCollector; // collector for time-series data
 
-	protected final String statTsKey;
-	protected final String statTqKey;
-	protected final String statSKey;
-	protected final String statNsKey;
-	protected final String statNqKey;
-	protected final String statXKey;
-
+	// --- KEYS FOR JOB-BASED STATS ---
+	protected final String statTsKey; // System Response Time (Wait + Service) -> E[Ts]
+	protected final String statTqKey; // Queue Time (Wait) -> E[Tq]
+	protected final String statSKey; // Service Time -> E[S]
+	// --- KEYS FOR TIME-BASED STATS ---
+	protected final String statNsKey; // Number in System -> E[Ns]
+	protected final String statNqKey; // Number in Queue -> E[Nq]
+	protected final String statXKey; // Number of Busy Servers -> Used for Utilization (Rho)
+	// --- KEYS FOR SAMPLING  ---
 	protected static final String sampleTsKey = "TimeTotal";
 	protected static final String sampleTqKey = "TimeQueue";
 	protected static final String sampleSKey = "TimeService";
 	protected static final String sampleNsKey = "NumTotal";
 	protected static final String sampleNqKey = "NumQueue";
-	protected static final String sampleXKey = "Utilization";
-
+	protected static final String sampleXKey = "BusyServers";
+	// Special key for the Global System Response Time
 	protected static final String statSysTsKey = "SystemResponseTime_Success";
 
-	protected long numJobsInNode;
-	protected double lastUpdateTime;
+	// --- STATE VARIABLES ---
+	protected long numJobsInNode; // current number of jobs in this center
+	protected double lastUpdateTime; // timestamp of the last state change
 
 	protected Center(
 			int id, 
@@ -65,17 +69,50 @@ public abstract class Center {
 		statXKey = "X_" + name;
 	}
 
-	/* specify here stats you want to collect */
+	public int getId() {
+		return id;
+	}
+	public String getName() {
+		return name;
+	}
+
+	/* helper to use the networkRoutingPoint */
+	protected final Center getNextCenter(Job job) {
+		Rngs rngs = serviceProcess.getRngs();
+		return networkRoutingPoint.getNextCenter(rngs, job);
+	}
+
+	// ------------------------------------------------------------------------
+	// METHODS FOR TIME-BASED STATISTICS
+	// ------------------------------------------------------------------------
+
+	/**
+	 * abstract method to define how to accumulate the area under the curve for Time-Based statistics
+	 * implemented by subclasses
+	 * @param duration = the time interval since the last update
+	 */
 	protected abstract void timeStats(double duration);
 
-	/* call this method when you need to collect */
+	/**
+	 * updates the integral of the state variables (Area = Value * Duration)
+	 * must be called before changing the state (numJobsInNode++ or --)
+	 * @param currentClock = the current simulation time
+	 */
 	protected final void collectTimeStats(double currentClock) {
 	 	double duration = currentClock - lastUpdateTime;
 	 	timeStats(duration);
 	 	lastUpdateTime = currentClock;
 	}
 
-	/* helpers, you just need to set things accordingly in job */
+	// ------------------------------------------------------------------------
+	// HELPER METHODS FOR POPULATION-BASED STATISTICS (Job-Averaged)
+	// logic: Average = Sum(Observation_i) / N
+	// ------------------------------------------------------------------------
+
+	/**
+	 * records the Response Time (Ts) for a single job
+	 * Ts = Departure Time - Queue Entry Time
+	 */
 	protected final void sampleResponseTime(Job job) {
 		double queuedTime = job.getLastQueuedTime();
 		double endServiceTime = job.getLastEndServiceTime();
@@ -83,6 +120,10 @@ public abstract class Center {
 		statCollector.addSample(statTsKey, endServiceTime - queuedTime);
 	}
 
+	/**
+	 * records the Service Time (S) for a single job
+	 * S = Service End Time - Service Start Time
+	 */
 	protected final void sampleServiceTime(Job job) {
 		double endServiceTime = job.getLastEndServiceTime();
 		double startServiceTime = job.getLastStartServiceTime();
@@ -90,6 +131,10 @@ public abstract class Center {
 		statCollector.addSample(statSKey, endServiceTime - startServiceTime);
 	}
 
+	/**
+	 * records the Queue Time (Tq) for a single job
+	 * Tq = Service Start Time - Queue Entry Time
+	 */
 	protected final void sampleQueueTime(Job job) {
 		double queuedTime = job.getLastQueuedTime();
 		double startServiceTime = job.getLastStartServiceTime();
@@ -97,12 +142,20 @@ public abstract class Center {
 		statCollector.addSample(statTqKey, startServiceTime - queuedTime);
 	}
 
+	/**
+	 * records the Global System Response Time.
+	 * (only called when the job permanently leaves the system)
+	 * SystemTime = System Exit Time - Airport Arrival Time
+	 */
 	protected final void sampleSystemResponseTimeSuccess(double now, Job job) {
 		double responseTime = now - job.getArrivalTime();
 
 		statCollector.addSample(statSysTsKey, responseTime);
 	}
 
+	// ------------------------------------------------------------------------
+	// GETTERS FOR SAMPLING (Current Means)
+	// ------------------------------------------------------------------------
 	protected final double getResponseTimeMeanSoFar() {
 		return statCollector.getPopulationMean(statTsKey);
 	}
@@ -119,20 +172,9 @@ public abstract class Center {
 		return statCollector.getPopulationMean(statSysTsKey);
 	}
 
-	/* common properties  */
-	public int getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	/* helper to use the networkRoutingPoint */
-	protected final Center getNextCenter(Job job) {
-		Rngs rngs = serviceProcess.getRngs();
-		return networkRoutingPoint.getNextCenter(rngs, job);
-	}
+	// ------------------------------------------------------------------------
+	// EVENT HANDLING
+	// ------------------------------------------------------------------------
 
 	/* called by event handler */
 	public abstract void onArrival(Event event, EventQueue eventQueue);

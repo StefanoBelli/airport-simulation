@@ -1,14 +1,15 @@
 package mbpmcsn.stats.sampling;
 
-/*
- *  a single statistic shot
- *  es. "at time 120.5, 5 pax at center CheckIn
+/**
+ * Represents a single discrete data point in a time-series
+ * It corresponds to a value observed at a specific instant 't'
+ * Used to plot the evolution of the system state over time (for es. Transient Analysis)
  */
 public class Sample {
-    private final double timestamp;
-    private final String centerName;
-    private final String metric; // es. "Queue", "InService", "Total"
-    private final double value;
+    private final double timestamp; // Time 't' of observation
+    private final String centerName; // Source of the data (es. "CheckIn")
+    private final String metric; // What is being measured (es. "QueueLength")
+    private final double value; // The measured value at time 't'
 
     public Sample(double timestamp, String centerName, String metric, double value) {
         this.timestamp = timestamp;

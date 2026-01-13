@@ -12,8 +12,10 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * represents a Delay Node (no queue)
- * every arriving job is immediately served.
+ * Represents a Delay Node (G/G/infinity queue)
+ * - Number of Servers (m) = Infinity
+ * - Queueing is impossible: logic implies Nq = 0 and Tq = 0 always
+ * - Every arrival enters service immediately
  */
 
 public class InfiniteServer extends Center {
@@ -37,19 +39,27 @@ public class InfiniteServer extends Center {
 
 	@Override
 	public void onArrival(Event event, EventQueue eventQueue) {
+
 		double now = eventQueue.getCurrentClock();
+
+		// 1. UPDATE TIME-BASED STATS (Integrals)
 		collectTimeStats(now);
 
+		// 2. UPDATE STATE
 		numJobsInNode++;
 
+		// 3. SERVICE LOGIC
 		double svc = serviceProcess.getService();
 		Job job = event.getJob();
 
-		job.setLastQueuedTime(now);
-		job.setLastStartServiceTime(now);
+		// 4. JOB-BASED STATS RECORDING (Arrival Time = Start Service Time)
+		job.setLastQueuedTime(now); // T_in_queue
+		job.setLastStartServiceTime(now); // T_start_service (immediate)
 
+		// we can sample Queue Time immediately here because the wait is over
 		sampleQueueTime(job);
 
+		// 5. SCHEDULE DEPARTURE
 		Event departureEvent = new Event(
 				now + svc, EventType.DEPARTURE, this, job, null);
 
@@ -58,21 +68,29 @@ public class InfiniteServer extends Center {
 
 	@Override
 	public void onDeparture(Event event, EventQueue eventQueue) {
+
 		double now = eventQueue.getCurrentClock();
+
+		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
 
+		// 2. UPDATE STATE
 		numJobsInNode--;
 
+		// 3. JOB-BASED STATS RECORDING
 		Job job = event.getJob();
-		job.setLastEndServiceTime(now);
+		job.setLastEndServiceTime(now); // T_out
 
+		// calculate Response Time (Ts): T_out - T_in_queue
 		sampleResponseTime(job);
+		// calculate Service Time (S): T_out - T_start_service
 		sampleServiceTime(job);
 
+		// 4. ROUTING
 		Center nextCenter = getNextCenter(job);
 
-		// if no following center --> job exit -> store Response Time
 		if (nextCenter == null) {
+			// JOB EXIT: record Global System Response Time
 			sampleSystemResponseTimeSuccess(now, job);
 		} else {
 			Event arrivalEvent = new Event(now, EventType.ARRIVAL, nextCenter, job, null);
@@ -84,9 +102,9 @@ public class InfiniteServer extends Center {
 	public Object doSample() {
 		Map<String, Number> metrics = new HashMap<>();
 
-		metrics.put(sampleNsKey, numJobsInNode);
-		metrics.put(sampleNqKey, 0);
-		metrics.put(sampleXKey, numJobsInNode);
+		metrics.put(sampleNsKey, numJobsInNode); // Users in System
+		metrics.put(sampleNqKey, 0); // Users in Queue (always 0)
+		metrics.put(sampleXKey, numJobsInNode); // Busy Servers (always = Ns)
 
 		metrics.put(sampleTsKey, getResponseTimeMeanSoFar());
 		metrics.put(sampleTqKey, getQueueTimeMeanSoFar());
@@ -97,10 +115,17 @@ public class InfiniteServer extends Center {
 		return metrics;
 	}
 
+	/**
+	 * Updates the Area Under the Curve for Time-Based statistics
+	 * called by collectTimeStats()
+	 */
 	@Override
 	protected void timeStats(double duration) {
+		// E[Ns] -> Area += CurrentJobs * Duration
 		statCollector.updateArea(statNsKey, numJobsInNode, duration);
+		// E[Nq] -> Area += 0 * Duration (always 0)
 		statCollector.updateArea(statNqKey, 0, duration);
+		// In Infinite Server, Busy Servers (X) = Number in System (Ns)
 		statCollector.updateArea(statXKey, numJobsInNode, duration);
 	}
 }

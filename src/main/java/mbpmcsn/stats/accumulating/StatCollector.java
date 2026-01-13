@@ -4,13 +4,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * utility class for collecting statistical data during the simulation
+ * The Central Registry for all simulation statistics
+ * It acts as a facade between the simulation model (Centers) and the statistical accumulators
+ * Centers push data here using a String key (e.g., "Ts_CheckIn"), and this class
+ * routes the data to the correct PopulationStat or TimeStat object.
  */
 
 public final class StatCollector {
 
-    // map used to associate names's metrics (es. "Queue_CheckIn") to accumulators
+    /* maps used to associate names's metrics to accumulators */
+
+    // example: "Ts_CheckIn" -> PopulationStat object
     private final Map<String, PopulationStat> populationStats = new HashMap<>();
+    // example: "Ns_XRay" -> TimeStat object
     private final Map<String, TimeStat> timeStats = new HashMap<>();
 
     public void clear() {
@@ -46,6 +52,7 @@ public final class StatCollector {
         return timeStats.get(name).calculateMean();
     }
 
+    // getter
     public Map<String, PopulationStat> getPopulationStats() {
         return populationStats;
     }

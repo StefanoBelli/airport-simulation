@@ -17,15 +17,17 @@ import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
 
 /**
- * m server, where each server has its own dedicated queue
- * arriving jobs must choose which queue to join based on a specific policy
- * (es. Shortest Queue, Random, or Round Robin)
+ * Represents a Node with 'm' parallel servers, each having its own dedicated queue
+ * - Arrival Process: Jobs arrive at the center
+ * - Flow Assignment: a policy (SQF, Round Robin, Random) routes the job to sub-queue 'i'
+ * - Sub-systems: the node behaves like 'm' independent G/G/1 systems running in parallel
+ * - Global Stats: aggregated over all sub-queues
  */
 
 public class MultiServerMultiQueue extends Center {
+
 	/* let the client to decide to which sssq to redirect the job */
 	private final FlowAssignmentPolicy flowAssignmentPolicy;
-
 	/* should have fixed number of elements, numFlows */
 	private final List<SssqStatus> sssqStatus = new ArrayList<>();
 
@@ -57,11 +59,15 @@ public class MultiServerMultiQueue extends Center {
 
 	@Override
 	public void onArrival(Event event, EventQueue eventQueue) {
+
 		double now = eventQueue.getCurrentClock();
+
+		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
 
-		/* whole center */
-		numJobsInNode++;
+		numJobsInNode++; // whole center global counter
+
+		// 2. FLOW ASSIGNMENT
 
 		/* choose the flow based on client-provided policy */
 		int flowIdx = flowAssignmentPolicy.assignFlow(sssqStatus);
@@ -81,33 +87,38 @@ public class MultiServerMultiQueue extends Center {
 			return;
 		}
 
+		/* server idle -> starts immediately the service */
 		sssq.setActiveServer(true);
 
+		// 4. SCHEDULE DEPARTURE
 		scheduleDepartureEvent(now, job, sssq, eventQueue);
 	}
 
 	@Override
 	public void onDeparture(Event event, EventQueue eventQueue) {
+
 		double now = eventQueue.getCurrentClock();
+
+		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
 
-		/* whole center */
-		numJobsInNode--;
+		numJobsInNode--; /* whole center global counter */
 
-		/* determine the sssq that generated the departure event */
+		// 1. IDENTIFY THE SUB-SYSTEM
 		SssqStatus sssq = (SssqStatus) event.getArgs();
 
-		/* get the associated job */
+		// 2. JOB STATS FINALIZATION
 		Job job = event.getJob();
-		job.setLastEndServiceTime(now);
+		job.setLastEndServiceTime(now); // T_out
 
-		sampleServiceTime(job);
-		sampleResponseTime(job);
-		
-		/* whole-center exiting job routing applied */
+		sampleServiceTime(job); // S: T_out - T_start_service
+		sampleResponseTime(job); // Ts: T_out - T_in_queue
+
+		// 3. ROUTING
 		Center nextCenter = getNextCenter(job);
 
 		if (nextCenter == null) {
+			// EXIT FROM THE NODE: record Global System Response Time
 			sampleSystemResponseTimeSuccess(now, job);
 		} else {
 			/* generate arrival event for next center, as usual.
@@ -118,7 +129,7 @@ public class MultiServerMultiQueue extends Center {
 			eventQueue.add(arrivalEvent);
 		}
 
-		/* try to get a new job to run, if available */
+		// 4. PROCESS NEXT JOB IN THIS SPECIFIC QUEUE
 		Queue<Job> jobQueue = sssq.getQueue();
 
 		/* queue for the sssq is empty, nothing to do. */
@@ -136,9 +147,9 @@ public class MultiServerMultiQueue extends Center {
 	private void scheduleDepartureEvent(
 			double now, Job job, SssqStatus sssq, EventQueue eventQueue) {
 
-		job.setLastStartServiceTime(now);
+		job.setLastStartServiceTime(now); // T_start_service
 		
-		sampleQueueTime(job);
+		sampleQueueTime(job); // calculate Wait Time = T_start - T_in_queue
 
 		double svc = serviceProcess.getService();
 
@@ -154,10 +165,13 @@ public class MultiServerMultiQueue extends Center {
 	@Override
 	public Object doSample() {
 		Map<String, Number> metrics = new HashMap<>();
-		int numActiveServers = getNumActiveServers();
+		int numActiveServers = getNumActiveServers(); // sum of all busy servers
 
+		// Ns = Total jobs in the node
 		metrics.put(sampleNsKey, numJobsInNode);
+		// Nq = Total jobs - Jobs currently being served
 		metrics.put(sampleNqKey, numJobsInNode - numActiveServers);
+		// X = Number of busy servers (used for Utilization % calculation)
 		metrics.put(sampleXKey, numActiveServers);
 
 		metrics.put(sampleTsKey, getResponseTimeMeanSoFar());
@@ -173,8 +187,11 @@ public class MultiServerMultiQueue extends Center {
 	protected void timeStats(double duration) {
 		int numActiveServers = getNumActiveServers();
 
+		// aggregate statistics for the whole center
 		statCollector.updateArea(statNsKey, numJobsInNode, duration);
+		// E[Nq] = Total Jobs - Jobs in Service
 		statCollector.updateArea(statNqKey, numJobsInNode - numActiveServers, duration);
+		// E[X] = Sum of busy servers over time
 		statCollector.updateArea(statXKey, numActiveServers, duration);
 	}
 

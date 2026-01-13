@@ -1,27 +1,31 @@
 package mbpmcsn.stats.accumulating;
 
 /**
- * accumulator for time-weighted statistics
- * used for example for number of users in queue or server utilization
- * calculates the time average: Integral(Value * Duration) / TotalTime.
+ * Accumulator for Time-Based Statistics
+ * It implements the time-weighted mean formula: E[X] = Integral(x(t)dt) / T_total
+ * Used for continuous state variables like Queue Length (Nq), Number in System (Ns), Busy Servers
+ * Used inside 'Center.collectTimeStats()'
+ * Before the state changes (e.g., numJobs++), the Center calculates how long ('duration')
+ * the system stayed in the previous state ('val') and calls 'accumulate'
  */
-
 public final class TimeStat {
 
-    private double totalArea = 0.0;   // area under the curve (ValueSum * Duration)
-    private double totalTime = 0.0;   // total time of observation
+    private double totalArea = 0.0;   // Integral: Sum(Value * Duration)
+    private double totalTime = 0.0;   // T_total: Total simulation time observed
 
     /**
-     * update integral
-     * val = the value of the state variable (es. 5 pax in the queue)
-     * duration = the time that the value remains constant
+     * Updates the area under the curve.
+     * @param val = the value of the state variable (e.g., 5 people in queue)
+     * @param duration = how long this value persisted (e.g., for 12.5 seconds)
      */
     public void accumulate(double val, double duration) {
         totalArea += val * duration;
         totalTime += duration;
     }
 
-    // calculate the time-weighted average
+    /**
+     * @return The time-weighted average.
+     */
     public double calculateMean() {
         return (totalTime > 0) ? totalArea / totalTime : 0.0;
     }
