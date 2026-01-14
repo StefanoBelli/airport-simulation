@@ -45,8 +45,10 @@ public class App {
 
 				switch (choice) {
 					case 1:
+						final int workDay = 4800; //seconds in 80 min
+						final double samplingInterval = 100.00; //seconds
 						System.out.println("\n[INFO] Avvio Finite Horizon Experiment...");
-						runner = new FiniteHorizonRunner(new BaseSimulationModelBuilder(), 10000, false, 100.00);
+						runner = new FiniteHorizonRunner(new BaseSimulationModelBuilder(), workDay, false, samplingInterval);
 						break;
 
 					case 2:
