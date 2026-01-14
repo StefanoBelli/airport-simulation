@@ -1,5 +1,6 @@
 package mbpmcsn;
 
+import mbpmcsn.runners.VerificationRunner;
 import mbpmcsn.runners.finitehorizon.FiniteHorizonRunner;
 import mbpmcsn.runners.Runner;
 import mbpmcsn.runners.smbuilders.BaseSimulationModelBuilder;
@@ -56,7 +57,16 @@ public class App {
 						break;
 
 					case 3:
+
+						final double longRunTime = 1000000.0;
+
 						System.out.println("\n[INFO] Avvio Verification (M/M/k vs Simulation)...");
+						System.out.println("[INFO] Durata simulazione forzata a: " + longRunTime);
+
+						runner = new VerificationRunner(
+								new BaseSimulationModelBuilder(),
+								longRunTime
+						);
 						break;
 
 					/*case 4: do we really need this?

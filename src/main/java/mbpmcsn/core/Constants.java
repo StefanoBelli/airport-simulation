@@ -44,8 +44,8 @@ public final class Constants {
 
     /* Le lascio se vogliamo fare qualche altra prova più velocemente:
     public static final double ARRIVAL_DAY_RATE = 0.090598;
-    public static final double ARRIVAL_DAY_TIME = 11.037771;
-    */
+    public static final double ARRIVAL_DAY_TIME = 11.037771; */
+
 
     // --- Routing Probabilities ---
     public static final double P_DESK = 0.387181; // Vai ai Banchi Accettazione
