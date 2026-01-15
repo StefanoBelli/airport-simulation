@@ -81,7 +81,7 @@ public final class BaseSimulationModel extends SimulationModel {
     		rvgCheckIn = new TruncatedNormalGenerator(MEAN_S1, STD_S1, LB1, UB1);
     		rvgVarchi = new TruncatedNormalGenerator(MEAN_S2, STD_S2, LB2, UB2);
     		rvgPrep =  new TruncatedNormalGenerator(MEAN_S3, STD_S3, LB3, UB3);
-    		rvgXRay = new ErlangGenerator(MEAN_S4, K4);
+    		rvgXRay = new ErlangGenerator(MEAN_S4_k, K4);
     		rvgTrace = new TruncatedNormalGenerator(MEAN_S5, STD_S5, LB5, UB5);
     		rvgRecupero = new TruncatedNormalGenerator(MEAN_S6, STD_S6, LB6, UB6);
     	}
@@ -89,7 +89,7 @@ public final class BaseSimulationModel extends SimulationModel {
 
     @Override
     protected final void createArrivalProcess() {
-    	RandomVariateGenerator rvgArrival = new ExponentialGenerator(ARRIVAL_MEAN_TIME);
+    	RandomVariateGenerator rvgArrival = new ExponentialGenerator(ARRIVAL_PEAK_RATE);
         arrivalProcess = new ArrivalProcess(rvgArrival, rngs, STREAM_ARRIVALS);
     }
 

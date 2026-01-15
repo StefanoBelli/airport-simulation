@@ -38,8 +38,14 @@ public final class Constants {
     public static final int ID_RECUPERO_OGGETTI = 6;       // IS (Infinite Server)
 
     // --- Arrival Process ---
+
     public static final double ARRIVAL_PEAK_RATE = 0.222383; /* pax/sec */
-    public static final double ARRIVAL_MEAN_TIME = 4.496747; /* sec */
+    public static final double ARRIVAL_MEAN_TIME = 4.496747; /* (1 / ARRIVAL_PEAK_RATE) sec */
+
+    /* Le lascio se vogliamo fare qualche altra prova più velocemente:
+    public static final double ARRIVAL_DAY_RATE = 0.090598;
+    public static final double ARRIVAL_DAY_TIME = 11.037771; */
+
 
     // --- Routing Probabilities ---
     public static final double P_DESK = 0.387181; // Vai ai Banchi Accettazione
@@ -50,11 +56,11 @@ public final class Constants {
     public static final double P_SUCCESS = 0.9999; // Supera controlli sicurezza
 
     // --- Center 1: Banchi Accettazione (MSSQ), Truncated Normal ---
-    public static final int M1 = 4; // numero server centro 1
-    public static final double MEAN_S1 = 150.0;
-    public static final double STD_S1 = 50.0;
-    public static final double LB1 = 50.0;
-    public static final double UB1 = 300.0;
+    public static final int M1 = 8; // numero server centro 1
+    public static final double MEAN_S1 = 120.0;
+    public static final double STD_S1 = 40.0;
+    public static final double LB1 = 40.0;
+    public static final double UB1 = 240.0;
 
     // --- Center 2: Varchi Elettronici (MSMQ), Truncated Normal ---
     public static final int M2 = 4; // numero server centro 2
@@ -73,15 +79,14 @@ public final class Constants {
     public static final int M4 = 6; // numero server centro 4
     public static final int K4 = 3;
     public static final double MEAN_S4 = 60.0;
-    public static final double LB4 = 30.0;
+    public static final double MEAN_S4_k = 20.0; // (MEAN_S4 / K4)
 
     // --- Center 5: Trace Detection (SSQ), Truncated Normal ---
     public static final int M5 = 1; // numero server centro 5
-    // Distribution: Truncated Normal
-    public static final double MEAN_S5 = 120.0;
-    public static final double STD_S5 = 40.0;
-    public static final double LB5 = 40.0;
-    public static final double UB5 = 280.0;
+    public static final double MEAN_S5 = 40.0;
+    public static final double STD_S5 = 10.0;
+    public static final double LB5 = 10.0;
+    public static final double UB5 = 80;
 
     // --- Center 6: Recupero Oggetti Utente (IS), Truncated Normal ---
     public static final double MEAN_S6 = 180.0;
