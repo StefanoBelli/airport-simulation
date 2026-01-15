@@ -1,5 +1,6 @@
 package mbpmcsn;
 
+import mbpmcsn.core.Constants;
 import mbpmcsn.runners.VerificationRunner;
 import mbpmcsn.runners.finitehorizon.FiniteHorizonRunner;
 import mbpmcsn.runners.Runner;
@@ -46,10 +47,9 @@ public class App {
 
 				switch (choice) {
 					case 1:
-						final int workDay = 4800; //seconds in 80 min
 						final double samplingInterval = 100.00; //seconds
 						System.out.println("\n[INFO] Avvio Finite Horizon Experiment...");
-						runner = new FiniteHorizonRunner(new BaseSimulationModelBuilder(), workDay, false, samplingInterval);
+						runner = new FiniteHorizonRunner(new BaseSimulationModelBuilder(), Constants.WORK_DAY, false, samplingInterval);
 						break;
 
 					case 2:
@@ -58,7 +58,7 @@ public class App {
 
 					case 3:
 
-						final double longRunTime = 1000000.0;
+						final double longRunTime = 100000000.0;
 
 						System.out.println("\n[INFO] Avvio Verification (M/M/k vs Simulation)...");
 						System.out.println("[INFO] Durata simulazione forzata a: " + longRunTime);

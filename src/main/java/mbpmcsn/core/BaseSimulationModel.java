@@ -89,7 +89,7 @@ public final class BaseSimulationModel extends SimulationModel {
 
     @Override
     protected final void createArrivalProcess() {
-    	RandomVariateGenerator rvgArrival = new ExponentialGenerator(ARRIVAL_MEAN_TIME);
+    	RandomVariateGenerator rvgArrival = new ExponentialGenerator(ARRIVAL_MED_MEAN_TIME);
         arrivalProcess = new ArrivalProcess(rvgArrival, rngs, STREAM_ARRIVALS);
     }
 

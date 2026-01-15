@@ -41,7 +41,7 @@ public class VerificationRunner implements Runner {
 		StatCollector stats = run.getStatCollector();
 
 		// 2. CONFRONTO ANALITICO
-		double lambdaTot = Constants.ARRIVAL_PEAK_RATE;
+		double lambdaTot = Constants.ARRIVAL_MED_RATE;
 
 		System.out.println("\n--- RISULTATI VERIFICA ---");
 		System.out.printf("Lambda Totale (Input): %.4f pax/sec\n", lambdaTot);
