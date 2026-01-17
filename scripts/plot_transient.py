@@ -6,7 +6,7 @@ import os
 # Lancia py scripts/plot_transient.py output/transient-analysis
 
 # CONFIGURAZIONE
-NUM_REPLICATIONS_TO_PLOT = 7  # Quante "spaghetti lines" vogliamo visualizzare
+NUM_REPLICATIONS_TO_PLOT = 7
 
 def generate_transient_plots(experiment_path):
     runs_dir = os.path.join(experiment_path, "runs-samples")
@@ -18,7 +18,7 @@ def generate_transient_plots(experiment_path):
     print(f"--- Generazione Plot per: {experiment_path} ---")
 
     # Definiamo dove salvare i grafici
-    output_dir = os.path.join(experiment_path, "plot", "transient")
+    output_dir = os.path.join(experiment_path, "plot")
     os.makedirs(output_dir, exist_ok=True)
 
     # Dizionario per accumulare i dati
