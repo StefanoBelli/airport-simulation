@@ -27,6 +27,7 @@ public final class FiniteHorizonRunner implements Runner {
 	private static final int NUM_SHOWN_PILOT_SAMPLES = 40;
 	private static final int NUM_REPLICATIONS = 64;
 
+	private final String experimentName;
 	private final SimulationModelBuilder builder;
 	private final double simulationTime;
 	private final boolean approxServicesAsExp;
@@ -35,12 +36,14 @@ public final class FiniteHorizonRunner implements Runner {
 	private final Rngs rngs;
 
 	public FiniteHorizonRunner(
+			String experimentName,
 			SimulationModelBuilder smBuilder,
 			double simulationTime,
 			boolean approxServicesAsExp,
 			double arrivalsMeanTime,
 			double samplingInterval) {
 
+		this.experimentName = experimentName;
 		this.builder = smBuilder;
 		this.simulationTime = simulationTime;
 		this.approxServicesAsExp = approxServicesAsExp;
@@ -182,14 +185,16 @@ public final class FiniteHorizonRunner implements Runner {
 			List<IntervalEstimationRow> timeIeRows, 
 			Map<Integer, List<Sample>> runsSamples) {
 
+		String baseDir = "output/" + experimentName;
+
 		try {
 			CsvWriter.writeAll(
-					"output/finite-horizon/population-ie.csv", 
+					baseDir + "/population-ie.csv",
 					IntervalEstimationRow.class, 
 					populationIeRows);
 
 			CsvWriter.writeAll(
-					"output/finite-horizon/time-ie.csv", 
+					baseDir + "/time-ie.csv",
 					IntervalEstimationRow.class, 
 					timeIeRows);
 		} catch(CsvWriterException | IOException e) {
@@ -200,7 +205,7 @@ public final class FiniteHorizonRunner implements Runner {
 		for(final Integer runKey : runsSamples.keySet()) {
 			try {
 				CsvWriter.writeAll(
-						String.format("output/finite-horizon/runs-samples/run-%d/sample.csv", runKey),
+						String.format("%s/runs-samples/run-%d/sample.csv", baseDir, runKey),
 						Sample.class,
 						runsSamples.get(runKey));
 			} catch(CsvWriterException | IOException e) {

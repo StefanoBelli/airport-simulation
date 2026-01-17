@@ -1,25 +1,4 @@
-/* -------------------------------------------------------------------------
- * This program is based on a one-pass algorithm for the calculation of an
- * array of autocorrelations r[1], r[2], ... r[K].  The key feature of this
- * algorithm is the circular array 'hold' which stores the (K + 1) most
- * recent data points and the associated index 'p' which points to the
- * (rotating) head of the array.
- *
- * Data is read from a text file in the format 1-data-point-per-line (with
- * no blank lines).  Similar to programs UVS and BVS, this program is
- * designed to be used with OS redirection.
- *
- * NOTE: the constant K (maximum lag) MUST be smaller than the # of data
- * points in the text file, n.  Moreover, if the autocorrelations are to be
- * statistically meaningful, K should be MUCH smaller than n.
- *
- * Name              : Acs.java (AutoCorrelation Statistics)
- * Authors           : Steve Park & Dave Geyer  
- * Translation by    : Jun Wang
- * Language          : Java
- * Latest Revision   : 6-16-06
- * -------------------------------------------------------------------------
- */
+package mbpmcsn.desbook;
 
 import java.io.*;
 import java.util.*;

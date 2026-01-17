@@ -6,7 +6,6 @@ import mbpmcsn.event.Event;
 import mbpmcsn.event.EventType;
 import mbpmcsn.process.ArrivalProcess;
 import mbpmcsn.process.ServiceProcess;
-import mbpmcsn.process.rvg.ErlangGenerator;
 import mbpmcsn.process.rvg.ExponentialGenerator;
 import mbpmcsn.process.rvg.RandomVariateGenerator;
 import mbpmcsn.process.rvg.TruncatedNormalGenerator;

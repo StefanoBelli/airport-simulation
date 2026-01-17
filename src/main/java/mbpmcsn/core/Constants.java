@@ -47,6 +47,9 @@ public final class Constants {
 
     public static final int WORK_DAY = 64800; // secondi in 18h
     public static final int PEAK_TIME = 4800; // secondi in 80 min
+    public static final double FINITE_HORIZON_SAMPLING_INTERVAL = 100.00;
+    public static final double TRANSIENT_DURATION = 100000.0;
+    public static final double TRANSIENT_SAMPLING_INTERVAL = 400.0;
 
     // 0.03706383333
 
