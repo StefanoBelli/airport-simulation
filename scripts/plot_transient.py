@@ -59,7 +59,7 @@ def generate_transient_plots(experiment_path, filename_suffix=""):
             xray_nq['RunID'] = i
             collected_data['XRay_Nq'].append(xray_nq)
 
-            print(f" -> Caricata Run {i} (Stream {i})...")
+            print(f" -> Caricata Run {i} (Seed {i})...")
 
         except Exception as e:
             print(f"ERRORE leggendo Run {i}: {e}")
@@ -78,8 +78,8 @@ def generate_transient_plots(experiment_path, filename_suffix=""):
         for idx, df_run in enumerate(data_list):
             run_id = df_run['RunID'].iloc[0]
 
-            # Legenda: Run ID = Stream RNGS
-            label_text = f"Run {run_id} (Stream #{run_id})"
+            # Legenda: Run ID = Seed RNGS
+            label_text = f"Run {run_id} (Seed #{run_id})"
 
             plt.plot(df_run['Time'], df_run['Value'],
                      label=label_text,
@@ -92,7 +92,7 @@ def generate_transient_plots(experiment_path, filename_suffix=""):
         plt.ylabel(y_label, fontsize=12)
 
         # Legenda in alto a sinistra
-        plt.legend(loc='upper left', title="Configurazione Seed", frameon=True, shadow=True)
+        plt.legend(loc='upper right', title="Configurazione Seed", frameon=True, shadow=True)
 
         plt.grid(True, linestyle='--', alpha=0.4)
 

@@ -1,12 +1,11 @@
 package mbpmcsn.stats.batchmeans;
 
-import mbpmcsn.stats.accumulating.StatCollector;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
-public class BatchResult {
+public final class BatchResult {
 
     /*
      * We save a list of means
@@ -14,37 +13,51 @@ public class BatchResult {
      * k = # batch
      */
     private final Map<String, List<Double>> batchMeans = new HashMap<>();
+    private final int k;
 
-    /*
-     * Called at the end of every batch
-     * Get the statistics from the Stat Collector
-     */
-    public void addBatchStats(StatCollector stats) {
+    private int currentNumOfCollectedBatches;
 
-        // save Population-Based metrics
-        // stats.getPopulationStats() return Map<String, PopulationStat>
-        stats.getPopulationStats().forEach((key, popStat) -> {
-            // create the list for the metric if it not exists
-            batchMeans.putIfAbsent(key, new ArrayList<>());
-            // add mean of this batch to the list
-            batchMeans.get(key).add(popStat.calculateMean());
-        });
+    public BatchResult(int k) {
+    	this.k = k;
+    }
 
-        // save Time-Based metrics
-        // stats.getTimeStats() return Map<String, TimeStat>
-        stats.getTimeStats().forEach((key, timeStat) -> {
-            batchMeans.putIfAbsent(key, new ArrayList<>());
-            batchMeans.get(key).add(timeStat.calculateMean());
-        });
+    public int getK() {
+    	return k;
     }
 
     public Map<String, List<Double>> getResults() {
         return batchMeans;
     }
 
+    //shall return false when all k batches collected, true otherwise
+    //do all the things with another method for interval est.
+    public boolean addFullBatch(Map<String, List<Double>> batch) {
+    	if(currentNumOfCollectedBatches == k) {
+    		return false;
+    	}
+
+    	for(final String batchKey : batch.keySet()) {
+    		double mean = 0;
+    		List<Double> myBatch = batch.get(batchKey);
+    		for(final Double batchRecord : myBatch) {
+    			mean += batchRecord / myBatch.size();
+    		}
+
+    		batchMeans.putIfAbsent(batchKey, new ArrayList<>());
+    		batchMeans.get(batchKey).add(mean);
+    	}
+
+    	currentNumOfCollectedBatches++;
+
+    	return true;
+    }
+
     // return number of batch
     public int getCount() {
-        if (batchMeans.isEmpty()) return 0;
+        if (batchMeans.isEmpty()) {
+        	return 0;
+        }
+
         return batchMeans.values().iterator().next().size();
     }
 }

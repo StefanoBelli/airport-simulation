@@ -32,7 +32,7 @@ public class VerificationRunner implements Runner {
 		System.out.println("   [Ipotesi]: Arrivi Poissoniani, Servizi Esponenziali, t -> inf");
 		System.out.println("===================================================================");
 
-		// 1. ESECUZIONE SIMULAZIONE
+		// 1. ESECUZIONE SIMULAZIONE, to be changed with steady state, batch means technique!!!
 		SingleReplication run = new SingleReplication(
 				builder,
 				rngs,
