@@ -1,5 +1,6 @@
 package mbpmcsn.runners.steadystate;
 
+import mbpmcsn.core.Constants;
 import mbpmcsn.desbook.Rngs;
 import mbpmcsn.core.SimulationModel;
 import mbpmcsn.event.*;
@@ -11,8 +12,7 @@ import mbpmcsn.runners.smbuilders.SimulationModelBuilder;
 /* we may reuse this for the VerificationRunner */
 
 public final class VeryLongRun {
-	public static final int NUM_BATCHES = 96;
-	public static final int BATCH_SIZE = 1080;
+
 
 	private final EventQueue eventQueue;
 	private final StatCollector statCollector;
@@ -31,7 +31,7 @@ public final class VeryLongRun {
 		eventQueue = new EventQueue();
 		statCollector = new StatCollector();
 		batchCollector = new BatchCollector(
-				BATCH_SIZE, NUM_BATCHES, timeWarmup,
+				Constants.BATCH_SIZE, Constants.NUM_BATCHES, timeWarmup,
 				buildBatchesDoneCallback());
 		simulationModel = smBuilder.build(
 				rngs, eventQueue, statCollector, 
