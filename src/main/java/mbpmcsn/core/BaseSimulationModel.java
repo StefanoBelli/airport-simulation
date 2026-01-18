@@ -15,6 +15,7 @@ import mbpmcsn.desbook.Rngs;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
+import mbpmcsn.stats.batchmeans.BatchCollector;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +56,7 @@ public final class BaseSimulationModel extends SimulationModel {
     		EventQueue eventQueue, 
     		StatCollector statCollector,
     		SampleCollector sampleCollector,
+    		BatchCollector batchCollector,
     		boolean approxServicesAsExp,
     		double arrivalsMeanTime) {
 
@@ -63,6 +65,7 @@ public final class BaseSimulationModel extends SimulationModel {
     			eventQueue,
     			statCollector,
     			sampleCollector,
+    			batchCollector,
     			approxServicesAsExp,
     			arrivalsMeanTime);
     }
@@ -101,7 +104,8 @@ public final class BaseSimulationModel extends SimulationModel {
                 sp5,
                 routingRecupero,
                 statCollector,
-                this.sampleCollector
+                sampleCollector,
+        		batchCollector
         );
 
         // 4. Trace Detection
@@ -113,7 +117,8 @@ public final class BaseSimulationModel extends SimulationModel {
                 sp4,
                 routingTrace,
                 statCollector,
-                this.sampleCollector
+                sampleCollector,
+        		batchCollector
         );
 
         // 3. X-Ray (MSMQ) - Nota: Erlang
@@ -126,7 +131,8 @@ public final class BaseSimulationModel extends SimulationModel {
                 sp3,
                 routingXRay,
                 statCollector,
-                this.sampleCollector,
+                sampleCollector,
+                batchCollector,
                 M3,
                 rrPolicy
         );
@@ -141,7 +147,8 @@ public final class BaseSimulationModel extends SimulationModel {
                 sp2,
                 routingVarchi,
                 statCollector,
-                this.sampleCollector,
+                sampleCollector,
+                batchCollector,
                 M2,
                 sqfPolicy
         );
@@ -155,7 +162,8 @@ public final class BaseSimulationModel extends SimulationModel {
                 sp1, 
                 routingCheckIn, 
                 statCollector,
-                this.sampleCollector,
+                sampleCollector,
+                batchCollector,
                 M1
         );
 

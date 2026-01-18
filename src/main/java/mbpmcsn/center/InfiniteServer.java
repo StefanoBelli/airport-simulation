@@ -8,6 +8,7 @@ import mbpmcsn.entity.Job;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
+import mbpmcsn.stats.batchmeans.BatchCollector;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -25,7 +26,8 @@ public class InfiniteServer extends Center {
 			ServiceProcess serviceProcess, 
 			NetworkRoutingPoint networkRoutingPoint,
 			StatCollector statCollector,
-			SampleCollector sampleCollector) {
+			SampleCollector sampleCollector,
+			BatchCollector batchCollector) {
 
 		super(
 				id, 
@@ -33,7 +35,8 @@ public class InfiniteServer extends Center {
 				serviceProcess, 
 				networkRoutingPoint, 
 				statCollector, 
-				sampleCollector
+				sampleCollector,
+				batchCollector
 		);
 	}
 
@@ -73,6 +76,9 @@ public class InfiniteServer extends Center {
 
 		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
+
+		/* collect batch stats */
+		batchCollect(now);
 
 		// 2. UPDATE STATE
 		numJobsInNode--;

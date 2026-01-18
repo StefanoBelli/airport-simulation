@@ -8,6 +8,7 @@ import mbpmcsn.event.Event;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
+import mbpmcsn.stats.batchmeans.BatchCollector;
 import mbpmcsn.desbook.Rngs;
 
 public abstract class SimulationModel {
@@ -16,6 +17,7 @@ public abstract class SimulationModel {
     protected final EventQueue eventQueue;
     protected final StatCollector statCollector;
     protected final SampleCollector sampleCollector;
+    protected final BatchCollector batchCollector;
     protected final Rngs rngs;
 
     protected final double arrivalsMeanTime;
@@ -25,6 +27,7 @@ public abstract class SimulationModel {
     		EventQueue eventQueue, 
     		StatCollector statCollector,
     		SampleCollector sampleCollector,
+    		BatchCollector batchCollector,
     		boolean approxServicesAsExp,
     		double arrivalsMeanTime) {
 
@@ -33,6 +36,7 @@ public abstract class SimulationModel {
         this.statCollector = statCollector;
         this.sampleCollector = sampleCollector;
         this.arrivalsMeanTime = arrivalsMeanTime;
+        this.batchCollector = batchCollector;
 
         createServiceGenerators(approxServicesAsExp);
         createArrivalProcess();

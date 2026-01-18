@@ -5,6 +5,7 @@ import mbpmcsn.core.BaseSimulationModel;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
+import mbpmcsn.stats.batchmeans.BatchCollector;
 import mbpmcsn.desbook.Rngs;
 
 public final class BaseSimulationModelBuilder implements SimulationModelBuilder {
@@ -14,6 +15,7 @@ public final class BaseSimulationModelBuilder implements SimulationModelBuilder 
 			EventQueue eventQueue, 
 			StatCollector statCollector, 
 			SampleCollector sampleCollector, 
+			BatchCollector batchCollector,
 			boolean approxServicesAsExp,
 			double arrivalsMeanTime) {
 
@@ -22,6 +24,7 @@ public final class BaseSimulationModelBuilder implements SimulationModelBuilder 
 				eventQueue, 
 				statCollector, 
 				sampleCollector, 
+				batchCollector,
 				approxServicesAsExp,
 				arrivalsMeanTime);
 	}

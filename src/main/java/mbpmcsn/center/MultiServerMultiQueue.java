@@ -15,6 +15,7 @@ import mbpmcsn.flowpolicy.FlowAssignmentPolicy;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
+import mbpmcsn.stats.batchmeans.BatchCollector;
 
 /**
  * Represents a Node with 'm' parallel servers, each having its own dedicated queue
@@ -38,6 +39,7 @@ public class MultiServerMultiQueue extends Center {
 			NetworkRoutingPoint networkRoutingPoint,
 			StatCollector statCollector,
 			SampleCollector sampleCollector,
+			BatchCollector batchCollector,
 			int numFlows,
 			FlowAssignmentPolicy flowAssignmentPolicy) {
 
@@ -47,7 +49,8 @@ public class MultiServerMultiQueue extends Center {
 				serviceProcess,
 				networkRoutingPoint,
 				statCollector,
-				sampleCollector
+				sampleCollector,
+				batchCollector
 		);
 
 		this.flowAssignmentPolicy = flowAssignmentPolicy;
@@ -101,6 +104,9 @@ public class MultiServerMultiQueue extends Center {
 
 		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
+
+		/* collect batch stats */
+		batchCollect(now);
 
 		numJobsInNode--; /* whole center global counter */
 

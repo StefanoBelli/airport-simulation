@@ -7,6 +7,7 @@ import mbpmcsn.event.EventQueue;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
+import mbpmcsn.stats.batchmeans.BatchCollector;
 import mbpmcsn.entity.Job;
 
 /*
@@ -23,6 +24,7 @@ public abstract class Center {
 	private final NetworkRoutingPoint networkRoutingPoint;
 	protected final StatCollector statCollector; // accumulator for final averages
 	private final SampleCollector sampleCollector; // collector for time-series data
+	private final BatchCollector batchCollector;
 
 	// --- KEYS FOR JOB-BASED STATS ---
 	protected final String statTsKey; // System Response Time (Wait + Service) -> E[Ts]
@@ -52,7 +54,8 @@ public abstract class Center {
 			ServiceProcess serviceProcess, 
 			NetworkRoutingPoint networkRoutingPoint,
 			StatCollector statCollector,
-			SampleCollector sampleCollector) {
+			SampleCollector sampleCollector,
+			BatchCollector batchCollector) {
 
 		this.id = id;
 		this.name = name;
@@ -60,6 +63,7 @@ public abstract class Center {
 		this.networkRoutingPoint = networkRoutingPoint;
 		this.statCollector = statCollector;
 		this.sampleCollector = sampleCollector;
+		this.batchCollector = batchCollector;
 
 		statTsKey = "Ts_" + name;
 		statTqKey = "Tq_" + name;
@@ -67,6 +71,11 @@ public abstract class Center {
 		statNsKey = "Ns_" + name;
 		statNqKey = "Nq_" + name;
 		statXKey = "X_" + name;
+
+		if(statCollector == null) {
+			throw new IllegalArgumentException(
+					"ctor with statCollector being set to null");
+		}
 	}
 
 	public int getId() {
@@ -170,6 +179,15 @@ public abstract class Center {
 
 	protected final double getSystemResponseTimeSuccessMeanSoFar() {
 		return statCollector.getPopulationMean(statSysTsKey);
+	}
+
+	/* helper checks for you if batchCollector is null */
+	protected final void batchCollect(double nowtime) {
+		if(batchCollector == null) {
+			return;
+		}
+
+		batchCollector.collectBatchStats(nowtime, statCollector);
 	}
 
 	// ------------------------------------------------------------------------

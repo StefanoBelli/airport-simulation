@@ -7,6 +7,7 @@ import mbpmcsn.desbook.Rngs;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
+import mbpmcsn.stats.batchmeans.BatchCollector;
 
 public final class ImprovedSimulationModel extends SimulationModel {
 	public ImprovedSimulationModel(
@@ -14,6 +15,7 @@ public final class ImprovedSimulationModel extends SimulationModel {
     		EventQueue eventQueue, 
     		StatCollector statCollector,
     		SampleCollector sampleCollector,
+    		BatchCollector batchCollector,
     		boolean approxServicesAsExp,
     		double arrivalsMeanTime) {
 
@@ -22,6 +24,7 @@ public final class ImprovedSimulationModel extends SimulationModel {
     			eventQueue,
     			statCollector,
     			sampleCollector,
+    			batchCollector,
     			approxServicesAsExp,
     			arrivalsMeanTime
     	);

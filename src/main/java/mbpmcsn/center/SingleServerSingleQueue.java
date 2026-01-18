@@ -13,6 +13,7 @@ import mbpmcsn.entity.Job;
 import mbpmcsn.routing.NetworkRoutingPoint;
 import mbpmcsn.stats.accumulating.StatCollector;
 import mbpmcsn.stats.sampling.SampleCollector;
+import mbpmcsn.stats.batchmeans.BatchCollector;
 
 /**
  * Represents a G/G/1 Node: Single Server and a Single FIFO Queue
@@ -31,7 +32,8 @@ public class SingleServerSingleQueue extends Center {
 			ServiceProcess serviceProcess,
 			NetworkRoutingPoint networkRoutingPoint,
 			StatCollector statCollector,
-			SampleCollector sampleCollector) {
+			SampleCollector sampleCollector,
+			BatchCollector batchCollector) {
 
 		super(
 				id,
@@ -39,7 +41,8 @@ public class SingleServerSingleQueue extends Center {
 				serviceProcess,
 				networkRoutingPoint,
 				statCollector,
-				sampleCollector
+				sampleCollector,
+				batchCollector
 		);
 	}
 
@@ -75,6 +78,9 @@ public class SingleServerSingleQueue extends Center {
 
 		// 1. UPDATE TIME-BASED STATS
 		collectTimeStats(now);
+
+		/* collect batch stats */
+		batchCollect(now);
 
 		// 2. UPDATE GLOBAL COUNTER
 		numJobsInNode--;
