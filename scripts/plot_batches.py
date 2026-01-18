@@ -22,7 +22,7 @@ def plot_batch_trends(csv_path):
     # Input: .../output/NOME_ESPERIMENTO/batch_data.csv
     # Output: .../output/NOME_ESPERIMENTO/plots/batches/
     experiment_dir = os.path.dirname(csv_path)
-    output_dir = os.path.join(experiment_dir, "plots")
+    output_dir = os.path.join(experiment_dir, "plot")
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"--- Elaborazione Batches: {csv_path} ---")

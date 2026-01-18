@@ -13,7 +13,7 @@ def plot_summary_clean(csv_path):
 
     # Calcolo cartella di output dinamica
     experiment_dir = os.path.dirname(csv_path)
-    output_dir = os.path.join(experiment_dir, "plots")
+    output_dir = os.path.join(experiment_dir, "plot")
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"--- Elaborazione Summary: {csv_path} ---")
