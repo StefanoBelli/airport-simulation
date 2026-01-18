@@ -1,11 +1,10 @@
-package mbpmcsn.runners.finitehorizon;
+package mbpmcsn.stats.ie;
 
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.List;
 import java.util.ArrayList;
 
-import mbpmcsn.stats.ie.IntervalEstimation;
 import mbpmcsn.csv.annotations.*;
 
 @CsvDescriptor

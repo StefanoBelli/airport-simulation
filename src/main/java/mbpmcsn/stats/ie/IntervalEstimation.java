@@ -3,7 +3,8 @@ package mbpmcsn.stats.ie;
 import mbpmcsn.desbook.Rvms;
 import java.util.List;
 
-public final class IntervalEstimation {
+/* package-private */
+final class IntervalEstimation {
 	public static final double LEVEL_OF_CONFIDENCE = 0.95;
 
 	public static double width(List<Double> values) {

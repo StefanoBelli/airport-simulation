@@ -31,33 +31,19 @@ public final class BatchResult {
 
     //shall return false when all k batches collected, true otherwise
     //do all the things with another method for interval est.
-    public boolean addFullBatch(Map<String, List<Double>> batch) {
+    //package-private visibility
+    boolean addFullBatch(Map<String, Double> batch) {
     	if(currentNumOfCollectedBatches == k) {
     		return false;
     	}
 
-    	for(final String batchKey : batch.keySet()) {
-    		double mean = 0;
-    		List<Double> myBatch = batch.get(batchKey);
-    		for(final Double batchRecord : myBatch) {
-    			mean += batchRecord / myBatch.size();
-    		}
-
+    	batch.forEach((batchKey, batchValue) -> {
     		batchMeans.putIfAbsent(batchKey, new ArrayList<>());
-    		batchMeans.get(batchKey).add(mean);
-    	}
+    		batchMeans.get(batchKey).add(batchValue);
+    	});
 
     	currentNumOfCollectedBatches++;
 
     	return true;
-    }
-
-    // return number of batch
-    public int getCount() {
-        if (batchMeans.isEmpty()) {
-        	return 0;
-        }
-
-        return batchMeans.values().iterator().next().size();
     }
 }

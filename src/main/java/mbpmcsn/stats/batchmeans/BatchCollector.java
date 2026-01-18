@@ -2,27 +2,22 @@ package mbpmcsn.stats.batchmeans;
 
 import mbpmcsn.stats.accumulating.StatCollector;
 
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.ArrayList;
 
 public final class BatchCollector {
 
 	/* batch size */
 	private final int b;
 
-	/* rotating batch of dim b */
-	private final Map<String, List<Double>> currentBatch;
+	/* batch being set when # of jobCount reaches b */
+	private final Map<String, Double> currentBatch;
 
 	/* collect batch stats each # of jobs */
 	private final int jobInterval;
 
 	/* resulting batch means */
 	private final BatchResult batchResult;
-
-	/* what to do if collected all k batches ? */
-	private final OnBatchesDoneCallback onBatchesDoneCallback;
 
 	/* incremented whenever collectBatchStats 
 	 * gets called by the center */
@@ -37,14 +32,12 @@ public final class BatchCollector {
 	public BatchCollector(
 			int b, 
 			int k,
-			int jobInterval, 
-			OnBatchesDoneCallback onBatchesDoneCallback) {
+			int jobInterval) {
 
 		this(
 				b,
 				k,
 				jobInterval, 
-				onBatchesDoneCallback, 
 				0, 
 				0);
 	}
@@ -53,14 +46,12 @@ public final class BatchCollector {
 			int b, 
 			int k,
 			int jobInterval, 
-			OnBatchesDoneCallback onBatchesDoneCallback,
 			int jobWarmup) {
 
 		this(
 				b,
 				k,
 				jobInterval, 
-				onBatchesDoneCallback, 
 				jobWarmup, 
 				0);
 
@@ -73,14 +64,12 @@ public final class BatchCollector {
 			int b, 
 			int k,
 			int jobInterval, 
-			OnBatchesDoneCallback onBatchesDoneCallback,
 			double timeWarmup) {
 
 		this(
 				b,
 				k,
 				jobInterval, 
-				onBatchesDoneCallback, 
 				0, 
 				timeWarmup);
 
@@ -93,7 +82,6 @@ public final class BatchCollector {
 			int b, 
 			int k,
 			int jobInterval, 
-			OnBatchesDoneCallback onBatchesDoneCallback,
 			int jobWarmup,
 			double timeWarmup) {
 
@@ -101,19 +89,16 @@ public final class BatchCollector {
 		this.currentBatch = new HashMap<>();
 		this.jobInterval = jobInterval;
 		this.batchResult = new BatchResult(k);
-		this.onBatchesDoneCallback = onBatchesDoneCallback;
 		this.jobWarmup = jobWarmup;
 		this.timeWarmup = timeWarmup;
-	}
-
-	public int getB() {
-		return b;
 	}
 
 	/* called by the center anyway, method impl 
 	 * will take care of determining whether
 	 * to collect or not, based on passed params */
-	public void collectBatchStats(double nowtime, StatCollector stats) {
+	public void collectBatchStats(double nowtime, StatCollector stats) 
+			throws AllKBatchesDoneException {
+
 		if(isWarmingUp(nowtime)) {
 			return;
 		}
@@ -125,35 +110,31 @@ public final class BatchCollector {
 		jobCount++;
 	}
 
-    public void addBatchStats(StatCollector stats) {
-    	if(currentBatch.size() == b) {
+    private void addBatchStats(StatCollector stats) 
+    		throws AllKBatchesDoneException {
 
-    		//did we collect all k batches?
-    		if(!batchResult.addFullBatch(currentBatch)) {
-    			onBatchesDoneCallback.onBatchesDone();
-    			return;
-    		}
-
-    		currentBatch.clear();
+    	if(jobCount < b) {
+    		return;
     	}
 
         // save Population-Based metrics
         // stats.getPopulationStats() return Map<String, PopulationStat>
         stats.getPopulationStats().forEach((key, popStat) -> {
-            currentBatch.putIfAbsent(key, new ArrayList<>());
-            currentBatch.get(key).add(popStat.calculateMean());
+            currentBatch.put(key, Double.valueOf(popStat.calculateMean()));
         });
 
         // save Time-Based metrics
         // stats.getTimeStats() return Map<String, TimeStat>
         stats.getTimeStats().forEach((key, timeStat) -> {
-            currentBatch.putIfAbsent(key, new ArrayList<>());
-            currentBatch.get(key).add(timeStat.calculateMean());
+            currentBatch.put(key, Double.valueOf(timeStat.calculateMean()));
         });
-    }
 
-    public BatchResult getBatchResult() {
-    	return batchResult;
+    	//did we collect all k batches?
+    	if(!batchResult.addFullBatch(currentBatch)) {
+    		throw new AllKBatchesDoneException();
+    	}
+
+    	currentBatch.clear();
     }
 
     private boolean isWarmingUp(double nowtime) {
@@ -167,5 +148,14 @@ public final class BatchCollector {
 
     	return nowtime < timeWarmup;
     }
+
+	public int getB() {
+		return b;
+	}
+
+    public BatchResult getBatchResult() {
+    	return batchResult;
+    }
+
 }
 

@@ -2,7 +2,7 @@ package mbpmcsn.stats.batchmeans;
 
 import java.util.List;
 
-public class BatchMathUtils {
+public final class BatchMathUtils {
 
     /**
      * calculate autocorrelation between batch i and batch i+1
@@ -18,7 +18,10 @@ public class BatchMathUtils {
         double mean = 0.0;
 
         // calculate sample mean
-        for (Double val : data) mean += val;
+        for (final Double val : data) {
+        	mean += val;
+        }
+
         mean /= k;
 
         double numerator = 0.0;
@@ -36,7 +39,9 @@ public class BatchMathUtils {
             denominator += Math.pow(data.get(i) - mean, 2);
         }
 
-        if (denominator == 0) return 0.0; // min correlation, all the dates are equal
+        if (denominator == 0) {
+        	return 0.0; // min correlation, all the dates are equal
+        }
 
         return numerator / denominator;
     }

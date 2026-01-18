@@ -13,6 +13,7 @@ import mbpmcsn.desbook.Rngs;
 import mbpmcsn.runners.smbuilders.SimulationModelBuilder;
 import mbpmcsn.runners.Runner;
 import mbpmcsn.stats.accumulating.StatLogger;
+import mbpmcsn.stats.ie.IntervalEstimationRow;
 import mbpmcsn.csv.CsvWriter;
 import mbpmcsn.csv.CsvWriterException;
 
