@@ -29,4 +29,9 @@ public final class TimeStat {
     public double calculateMean() {
         return (totalTime > 0) ? totalArea / totalTime : 0.0;
     }
+
+    public void reset() {
+        this.totalArea = 0.0;
+        this.totalTime = 0.0;
+    }
 }

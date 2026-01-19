@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import mbpmcsn.csv.annotations.*;
+import mbpmcsn.stats.batchmeans.BatchMathUtils;
 
 @CsvDescriptor
 public final class IntervalEstimationRow {
@@ -14,19 +15,25 @@ public final class IntervalEstimationRow {
 	private final double mean;
 	private final double min;
 	private final double max;
+	private final double autocorrelation;
+	private final boolean showAc;
 
 	private IntervalEstimationRow(
 			String metric,
 			double width, 
 			double mean, 
 			double min, 
-			double max) {
+			double max,
+			double autocorrelation,
+			boolean showAc) {
 
 		this.metric = metric;
 		this.width = width;
 		this.mean = mean;
 		this.min = min;
 		this.max = max;
+		this.autocorrelation = autocorrelation;
+		this.showAc = showAc;
 	}
 
 	@CsvColumn(order = 1, name = "Metric")
@@ -54,13 +61,27 @@ public final class IntervalEstimationRow {
 		return max;
 	}
 
+	@CsvColumn(order = 6, name = "Autocorr")
+	public double getAutocorrelation() { return autocorrelation; }
+
 	@Override
 	public String toString() {
-		return String.format("%-30s | %13.4f | +/- %12.4f | [%10.4f ... %10.4f]",
-					metric, mean, width, min, max);
+		String base = String.format("%-30s | %13.4f | +/- %12.4f | [%10.4f ... %10.4f]",
+				metric, mean, width, min, max);
+
+		if (this.showAc) {
+			return base + String.format(" | AC: %6.3f", autocorrelation);
+		} else {
+			return base;
+		}
 	}
 
 	public static List<IntervalEstimationRow> fromMapOfData(Map<String, List<Double>> data) {
+		return fromMapOfData(data, false);
+	}
+
+
+	public static List<IntervalEstimationRow> fromMapOfData(Map<String, List<Double>> data, boolean showAc) {
 		List<IntervalEstimationRow> ies = new ArrayList<>();
 
 		for (final String metricKey : new TreeMap<>(data).keySet()) {
@@ -70,8 +91,9 @@ public final class IntervalEstimationRow {
 			double mean = values.stream().mapToDouble(v -> v).average().orElse(0.0);
 			double min = mean - width;
 			double max = mean + width;
+			double ac = BatchMathUtils.computeAutocorrelation(values);
 
-			ies.add(new IntervalEstimationRow(metricKey, width, mean, min, max));
+			ies.add(new IntervalEstimationRow(metricKey, width, mean, min, max, ac, showAc));
 		}
 
 		return ies;

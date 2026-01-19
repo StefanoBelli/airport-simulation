@@ -38,4 +38,9 @@ public final class PopulationStat {
         return count;
     }
 
+    public void reset() {
+        this.count = 0;
+        this.sum = 0.0;
+    }
+
 }

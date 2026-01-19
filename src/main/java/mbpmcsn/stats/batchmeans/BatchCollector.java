@@ -80,19 +80,27 @@ public final class BatchCollector {
 
 		PerCenterBatchInfo batchInfo = perCenterBatchInfo.get(centerName);
 
+		if (batchInfo.batchesCount >= k) {
+			return;
+		}
+
 		addBatchStats(centerName, batchInfo, stats);
 	}
 
     private void addBatchStats(String centerName, PerCenterBatchInfo batchInfo, StatCollector stats) {
-    	if(batchInfo.jobCount >= b) {
-    		return;
-    	}
+
+		batchInfo.jobCount++;
+
+		if(batchInfo.jobCount < b) {
+			return;
+		}
 
         // save Population-Based metrics
         // stats.getPopulationStats() return Map<String, PopulationStat>
         stats.getPopulationStats().forEach((key, popStat) -> {
         	if(key.contains(centerName)) {
         		currentBatch.put(key, Double.valueOf(popStat.calculateMean()));
+				popStat.reset();
         	}
         });
 
@@ -101,21 +109,38 @@ public final class BatchCollector {
         stats.getTimeStats().forEach((key, timeStat) -> {
         	if(key.contains(centerName)) {
         		currentBatch.put(key, Double.valueOf(timeStat.calculateMean()));
+				timeStat.reset();
         	}
         });
 
-        batchInfo.jobCount++;
+		saveBatchAndClean(batchInfo);
 
-    	//did we collect all k batches?
-    	boolean allKBatchesDone = !addFullBatch(batchInfo);
-
-    	currentBatch.clear();
-    	batchInfo.jobCount = 0;
-
-    	if(allKBatchesDone) {
-    		onAllKBatchesDoneCallback.onDone(this);
-    	}
+		if(areAllCentersDone()) {
+			onAllKBatchesDoneCallback.onDone(this);
+		}
     }
+
+	private void saveBatchAndClean(PerCenterBatchInfo batchInfo) {
+		currentBatch.forEach((batchKey, batchValue) -> {
+			batchMeans.putIfAbsent(batchKey, new ArrayList<>());
+			batchMeans.get(batchKey).add(batchValue);
+		});
+
+		currentBatch.clear();
+
+		batchInfo.jobCount = 0;
+
+		batchInfo.batchesCount++;
+	}
+
+	private boolean areAllCentersDone() {
+		for(PerCenterBatchInfo info : perCenterBatchInfo.values()) {
+			if(info.batchesCount < k) {
+				return false; // someone is still working
+			}
+		}
+		return true; // all finish
+	}
 
     private boolean isWarmingUp(double nowtime) {
     	return timeWarmup != 0 && nowtime < timeWarmup;
@@ -166,5 +191,20 @@ public final class BatchCollector {
     	batchMeans.clear();
     	initZeroPerCenterBatchInfo();
     }
+
+	// calculate mean of the means of batches
+	public double getBatchGrandMean(String key) {
+		List<Double> values = batchMeans.get(key);
+
+		if (values == null || values.isEmpty()) {
+			return 0.0;
+		}
+
+		double sum = 0.0;
+		for (Double v : values) {
+			sum += v;
+		}
+		return sum / values.size();
+	}
 }
 

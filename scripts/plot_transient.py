@@ -91,7 +91,6 @@ def generate_transient_plots(experiment_path, filename_suffix=""):
         plt.xlabel("Tempo di Simulazione (s)", fontsize=12)
         plt.ylabel(y_label, fontsize=12)
 
-        # Legenda in alto a sinistra
         plt.legend(loc='upper right', title="Configurazione Seed", frameon=True, shadow=True)
 
         plt.grid(True, linestyle='--', alpha=0.4)

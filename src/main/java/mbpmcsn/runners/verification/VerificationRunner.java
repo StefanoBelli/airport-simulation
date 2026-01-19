@@ -1,26 +1,35 @@
-package mbpmcsn.runners;
+package mbpmcsn.runners.verification;
 
 import mbpmcsn.core.Constants;
+import mbpmcsn.csv.CsvWriter;
+import mbpmcsn.csv.CsvWriterException;
 import mbpmcsn.desbook.Rngs;
-import mbpmcsn.runners.finitehorizon.SingleReplication;
+import mbpmcsn.runners.Runner;
 import mbpmcsn.runners.smbuilders.SimulationModelBuilder;
-import mbpmcsn.stats.accumulating.StatCollector;
+import mbpmcsn.runners.steadystate.VeryLongRun;
+import mbpmcsn.stats.batchmeans.BatchCollector;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VerificationRunner implements Runner {
 
+	private final String experimentName;
 	private final SimulationModelBuilder builder;
-	private final double simulationTime;
 	private final Rngs rngs;
 	private final double arrivalsMeanTime;
 
-	public VerificationRunner(
-			SimulationModelBuilder builder, 
-			double arrivalsMeanTime,
-			double simulationTime) {
+	private final List<VerificationResultRow> results = new ArrayList<>();
 
+	public VerificationRunner(
+			String experimentName,
+			SimulationModelBuilder builder, 
+			double arrivalsMeanTime) {
+
+		this.experimentName = experimentName;
 		this.builder = builder;
 		this.arrivalsMeanTime = arrivalsMeanTime;
-		this.simulationTime = simulationTime;
 		this.rngs = new Rngs();
 		this.rngs.plantSeeds(Constants.SEED);
 	}
@@ -33,54 +42,51 @@ public class VerificationRunner implements Runner {
 		System.out.println("===================================================================");
 
 		// 1. ESECUZIONE SIMULAZIONE, to be changed with steady state, batch means technique!!!
-		SingleReplication run = new SingleReplication(
+		VeryLongRun run = new VeryLongRun(
 				builder,
 				rngs,
-				simulationTime,
 				true,  // Attiva M/M/k
 				arrivalsMeanTime,
-				0.0    // Sampling disabilitato
+				Constants.TIME_WARMUP
 		);
 
-		System.out.println(">>> Avvio simulazione...");
-		run.runReplication();
+		System.out.println(">>> Avvio simulazione Steady State per verifica...");
+		run.run();
 
-		StatCollector stats = run.getStatCollector();
+		BatchCollector batchCollector = run.getBatchCollector();
 
 		// 2. CONFRONTO ANALITICO
 		double lambdaTot = 1 / arrivalsMeanTime;
+
+		results.clear();
 
 		System.out.println("\n--- RISULTATI VERIFICA ---");
 		System.out.printf("Lambda Totale (Input): %.4f pax/sec\n", lambdaTot);
 
 		// --- VERIFICA CENTRO 1: Check-In (M/M/k) ---
 		double lambdaCheckIn = lambdaTot * Constants.P_DESK;
-		verifyMMkNode("CheckIn", stats, lambdaCheckIn, Constants.M1, Constants.MEAN_S1);
+		verifyMMkNode("CheckIn", batchCollector, lambdaTot * Constants.P_DESK, Constants.M1, Constants.MEAN_S1, "M/M/" + Constants.M1);
 
 		// --- VERIFICA CENTRO 2: Varchi (M/M/k) ---
-		// Tutti i passeggeri (sia diretti che da check-in) arrivano qui
-		// Lambda_Varchi = Lambda_Tot
-		// Approssimazione: SQF permette di considerarlo come M/M/k
-		verifyMMkNode("Varchi", stats, lambdaTot, Constants.M2, Constants.MEAN_S2);
+		verifyMMkNode("Varchi", batchCollector, lambdaTot, Constants.M2, Constants.MEAN_S2, "M/M/" + Constants.M2);
 
-		// --- VERIFICA CENTRO 3: XRay (M/M/k) ---
-		// Qui il Round Robin spezza il flusso in k flussi indipendenti
-		// NON usiamo Erlang-C, ma la formula M/M/1 sul singolo server
-		// La media globale accumulata dal simulatore deve coincidere con la media del singolo M/M/1
-		verifyIndependentMM1("XRay", stats, lambdaTot, Constants.M3, Constants.MEAN_S3);
+		// --- VERIFICA CENTRO 3: XRay (M/M/k approssimato) ---
+		verifyIndependentMM1("XRay", batchCollector, lambdaTot, Constants.M3, Constants.MEAN_S3);
 
 		// --- VERIFICA CENTRO 4: Trace Detection (M/M/k) ---
 		double lambdaTrace = lambdaTot * Constants.P_CHECK;
-		verifyMMkNode("TraceDetection", stats, lambdaTrace, Constants.M4, Constants.MEAN_S4);
+		verifyMMkNode("TraceDetection", batchCollector, lambdaTot * Constants.P_CHECK, Constants.M4, Constants.MEAN_S4, "M/M/" + Constants.M4);
 
 		// --- VERIFICA CENTRO 5: Recupero (M/M/inf) ---
-		verifyInfiniteServer("Recupero", stats, Constants.MEAN_S5);
+		verifyInfiniteServer("Recupero", batchCollector, Constants.MEAN_S5);
+
+		saveVerificationReport();
 	}
 
 	/*
 	 * Verifica per nodi M/M/k (Single Queue o Multi Queue approssimata)
 	 */
-	private void verifyMMkNode(String name, StatCollector stats, double lambda, int k, double meanService) {
+	private void verifyMMkNode(String name, BatchCollector collector, double lambda, int k, double meanService, String modelName) {
 		double mu = 1.0 / meanService;
 		double rho = lambda / (k * mu);
 
@@ -108,14 +114,16 @@ public class VerificationRunner implements Runner {
 		double E_Tq = pq / (k * mu - lambda);
 		double E_Ts_Theor = E_Tq + meanService;
 
-		compareAndPrint(name, stats, rho, E_Ts_Theor);
+		//compareAndPrint(name, collector, rho, E_Ts_Theor);
+		compareAndRecord(name, modelName, collector, rho, E_Ts_Theor);
 	}
 
 	/**
 	 * Caso: k * M/M/1 (Multi-Coda con Round Robin)
 	 * Formula: M/M/1 su flusso diviso
 	 */
-	private void verifyIndependentMM1(String name, StatCollector stats, double lambdaTot, int k, double meanService) {
+	private void verifyIndependentMM1(String name, BatchCollector collector, double lambdaTot, int k, double meanService) {
+		String modelName = "k*M/M/1 (RoundRobin)";
 		System.out.printf("\n>>> Centro: %-15s [k * M/M/1] (Round Robin)\n", name);
 
 		// Dividiamo il flusso, ogni server riceve lambda/k
@@ -133,19 +141,22 @@ public class VerificationRunner implements Runner {
 		// E[Ts] = 1 / (mu - lambda)
 		double E_Ts_Theor = 1.0 / (mu - lambdaSingle);
 
-		compareAndPrint(name, stats, rho, E_Ts_Theor);
+		//compareAndPrint(name, collector, rho, E_Ts_Theor);
+		compareAndRecord(name, modelName, collector, rho, E_Ts_Theor);
 	}
 
 	/**
 	 * Verifica specifica per nodi M/M/infinito (Infinite Server)
 	 * In questi nodi non esiste coda (Tq = 0), quindi Ts = S
 	 */
-	private void verifyInfiniteServer(String name, StatCollector stats, double meanService) {
+	private void verifyInfiniteServer(String name, BatchCollector collector, double meanService) {
+		String modelName = "M/M/inf";
 		System.out.printf("\n>>> Centro: %-15s [M/M/inf] (Delay)\n", name);
 
 		// Non c'è stabilità da controllare (rho è sempre 0 per definizione)
 		// Il tempo di risposta è puramente il tempo di servizio
-		compareAndPrint(name, stats, 0.0, meanService);
+		//compareAndPrint(name, collector, 0.0, meanService);
+		compareAndRecord(name, modelName, collector, 0.0, meanService);
 	}
 
 	private boolean checkInstability(double rho) {
@@ -158,9 +169,9 @@ public class VerificationRunner implements Runner {
 		return false;
 	}
 
-	private void compareAndPrint(String name, StatCollector stats, double rho, double expectedVal) {
+	/*private void compareAndPrint(String name, BatchCollector collector, double rho, double expectedVal) {
 		// Recupero il valore simulato (Media Globale accumulata)
-		double simulatedVal = stats.getPopulationMean("Ts_" + name);
+		double simulatedVal = collector.getBatchGrandMean("Ts_" + name);
 
 		double error = Math.abs(simulatedVal - expectedVal) / expectedVal * 100.0;
 
@@ -172,6 +183,35 @@ public class VerificationRunner implements Runner {
 			System.out.printf("    [OK] Verifica Superata (Errore: %.2f%%)\n", error);
 		} else {
 			System.out.printf("    [WARNING] Errore alto (%.2f%%). Aumentare durata?\n", error);
+		}
+	}*/
+
+	private void compareAndRecord(String name, String modelName, BatchCollector collector, double rho, double expectedVal) {
+
+		double simulatedVal = collector.getBatchGrandMean("Ts_" + name);
+
+		double error = Math.abs(simulatedVal - expectedVal) / expectedVal * 100.0;
+
+
+		String status = (error < 5.0) ? "OK" : "WARNING";
+
+		// Stampa a video
+		System.out.printf("    Rho: %.4f | Teor: %.2f s | Sim: %.2f s | Err: %.2f%% -> [%s]\n",
+				rho, expectedVal, simulatedVal, error, status);
+
+		// Aggiunge alla lista per il CSV
+		results.add(new VerificationResultRow(name, modelName, rho, expectedVal, simulatedVal, error, status));
+	}
+
+
+	private void saveVerificationReport() {
+		String path = "output/" + experimentName + "/verification_report.csv";
+		try {
+			System.out.println("\n[INFO] Salvataggio report verifica in: " + path);
+			CsvWriter.writeAll(path, VerificationResultRow.class, results);
+			System.out.println("[OK] File salvato correttamente.");
+		} catch (CsvWriterException | IOException e) {
+			System.err.println("[ERRORE] Impossibile salvare il report: " + e.getMessage());
 		}
 	}
 
