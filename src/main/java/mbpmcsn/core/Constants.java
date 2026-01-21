@@ -41,8 +41,8 @@ public final class Constants {
     public static final double ARRIVAL_LOW_RATE = 0.090598;
     public static final double ARRIVAL_LOW_MEAN_TIME = 11.037771;
 
-    public static final double ARRIVAL_MED_RATE = 0.134526;
-    public static final double ARRIVAL_MED_MEAN_TIME = 7.433507;
+    public static final double ARRIVAL_MED_RATE = 0.127205;
+    public static final double ARRIVAL_MED_MEAN_TIME = 7.861326;
 
     public static final int WORK_DAY = 64800; // secondi in 18h
     public static final int PEAK_TIME = 4800; // secondi in 80 min
@@ -69,14 +69,14 @@ public final class Constants {
     public static final double UB1 = 150.0;
     // --- Center 2: Varchi Elettronici (MSMQ), Truncated Normal
     public static final int M2 = 4; // numero server centro 2
-    public static final double MEAN_S2 = 13;
+    public static final double MEAN_S2 = 12;
     public static final double STD_S2 = 4;
-    public static final double LB2 = 12.0;
-    public static final double UB2 = 25;
+    public static final double LB2 = 10.0;
+    public static final double UB2 = 24;
     // --- Center 3: Controlli a Raggi X (MSMQ), Erlang-k (k=3)
     public static final int M3 = 6; // numero server centro 4
-    public static final double MEAN_S3 = 44;
-    public static final double STD_S3 = 20.0;
+    public static final double MEAN_S3 = 45;
+    public static final double STD_S3 = 25.0;
     public static final double LB3 = 20.0;
     public static final double UB3 = 90;
     // --- Center 4: Trace Detection (SSQ), Truncated Normal ---
