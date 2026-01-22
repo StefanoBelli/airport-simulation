@@ -82,7 +82,7 @@ public class VerificationRunner implements Runner {
 		// --- VERIFICA CENTRO 5: Recupero (M/M/inf) ---
 		verifyInfiniteServer("Recupero", batchCollector, Constants.MEAN_S5);
 
-		//saveVerificationReport();
+		saveVerificationReport();
 	}
 
 	/*
@@ -203,14 +203,26 @@ public class VerificationRunner implements Runner {
 		}
 
 		if(ie == null) {
-			throw new IllegalArgumentException("cannot find an interval estimation result for: " + keyStatPrefix + name);
+			throw new IllegalArgumentException(
+					"cannot find an interval estimation result for: " + 
+					keyStatPrefix + name);
 		}
 
 		boolean withinInterval = checkIfWithinInterval(ie, expectedVal);
 
-		System.out.printf("    %s | SimMean: %.4f | SimMin: %.4f | SimMax: %.4f | SimWidth: %.20f | TheoMean: %.4f => %s\n",
-				keyStatPrefix.getPrettyName(), ie.getMean(), ie.getMin(), ie.getMax(), ie.getWidth(), 
-				expectedVal, withinInterval ? "is within interval" : "is NOT within interval");
+		System.out.printf(
+				"    %s | SimMean: %.4f | SimMin: %.4f | " +
+				"SimMax: %.4f | SimWidth: %.20f | TheoMean: %.4f => %s\n",
+				keyStatPrefix.getPrettyName(), ie.getMean(), 
+				ie.getMin(), ie.getMax(), ie.getWidth(), 
+				expectedVal, 
+				withinInterval ? "is within interval" : "is NOT within interval");
+
+		results.add(new VerificationResultRow(
+					name, keyStatPrefix.getPrettyName(), 
+					modelName, ie.getMean(), ie.getMin(), 
+					ie.getMax(), ie.getWidth(), expectedVal, 
+					withinInterval));
 	}
 
 	private void saveVerificationReport() {

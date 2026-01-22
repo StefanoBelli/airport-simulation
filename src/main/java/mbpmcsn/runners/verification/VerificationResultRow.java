@@ -6,29 +6,35 @@ import mbpmcsn.csv.annotations.*;
 public final class VerificationResultRow {
 
 	private final String centerName;
+	private final String metricName;
 	private final String modelType;
-	private final double rho;
-	private final double theoreticalTs;
-	private final double simulatedTs;
-	private final double errorPerc;
-	private final String status; // "OK" o "WARNING"
+	private final double simValueMean;
+	private final double simValueMax;
+	private final double simValueMin;
+	private final double simIntvlWidth;
+	private final double theoValue;
+	private final boolean valueWithinIntvl;
 
 	public VerificationResultRow(
 			String centerName, 
+			String metricName,
 			String modelType, 
-			double rho, 
-			double theoreticalTs, 
-			double simulatedTs, 
-			double errorPerc, 
-			String status) {
+			double simValueMean,
+			double simValueMin,
+			double simValueMax,
+			double simIntvlWidth,
+			double theoValue,
+			boolean valueWithinIntvl) {
 
 		this.centerName = centerName;
+		this.metricName = metricName;
 		this.modelType = modelType;
-		this.rho = rho;
-		this.theoreticalTs = theoreticalTs;
-		this.simulatedTs = simulatedTs;
-		this.errorPerc = errorPerc;
-		this.status = status;
+		this.simValueMean = simValueMean;
+		this.simValueMin = simValueMin;
+		this.simValueMax = simValueMax;
+		this.simIntvlWidth = simIntvlWidth;
+		this.theoValue = theoValue;
+		this.valueWithinIntvl = valueWithinIntvl;
 	}
 
 	@CsvColumn(order = 1, name = "Center")
@@ -36,33 +42,43 @@ public final class VerificationResultRow {
 		return centerName; 
 	}
 
-	@CsvColumn(order = 2, name = "Model")
+	@CsvColumn(order = 2, name = "Metric")
+	public String getMetricName() {
+		return metricName;
+	}
+
+	@CsvColumn(order = 3, name = "Model")
 	public String getModelType() { 
 		return modelType; 
 	}
 
-	@CsvColumn(order = 3, name = "Rho")
-	public double getRho() { 
-		return rho; 
+	@CsvColumn(order = 4, name = "SimValueMean")
+	public double getSimValueMean() {
+		return simValueMean;
 	}
 
-	@CsvColumn(order = 4, name = "Theory_Ts")
-	public double getTheoreticalTs() { 
-		return theoreticalTs; 
+	@CsvColumn(order = 5, name = "SimValueMin")
+	public double getSimValueMin() {
+		return simValueMin;
 	}
 
-	@CsvColumn(order = 5, name = "Sim_Ts")
-	public double getSimulatedTs() { 
-		return simulatedTs; 
+	@CsvColumn(order = 6, name = "SimValueMax")
+	public double getSimValueMax() {
+		return simValueMax;
 	}
 
-	@CsvColumn(order = 6, name = "Error_%")
-	public double getErrorPerc() { 
-		return errorPerc; 
+	@CsvColumn(order = 7, name = "SimIntvlWidth")
+	public double getSimIntvlWidth() {
+		return simIntvlWidth;
 	}
 
-	@CsvColumn(order = 7, name = "Status")
-	public String getStatus() { 
-		return status; 
+	@CsvColumn(order = 8, name = "TheoValue")
+	public double getTheoValue() {
+		return theoValue;
+	}
+
+	@CsvColumn(order = 9, name = "WithinIntvl")
+	public String getValueWithinIntvl() {
+		return valueWithinIntvl ? "within" : "not within";
 	}
 }
