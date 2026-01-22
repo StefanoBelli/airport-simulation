@@ -73,7 +73,7 @@ public class VerificationRunner implements Runner {
 		verifyMMkNode("Varchi", batchCollector, lambdaTot, Constants.M2, Constants.MEAN_S2, "M/M/" + Constants.M2);
 
 		// --- VERIFICA CENTRO 3: XRay (M/M/k approssimato) ---
-		verifyIndependentMM1("XRay", batchCollector, lambdaTot, Constants.M3, Constants.MEAN_S3);
+		verifyMMkNode("XRay", batchCollector, lambdaTot, Constants.M3, Constants.MEAN_S3, "M/M/" + Constants.M3);
 
 		// --- VERIFICA CENTRO 4: Trace Detection (M/M/k) ---
 		double lambdaTrace = lambdaTot * Constants.P_CHECK;

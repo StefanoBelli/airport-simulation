@@ -121,11 +121,11 @@ public final class BaseSimulationModel extends SimulationModel {
         		batchCollector
         );
 
-        // 3. X-Ray (MSMQ) - Nota: Erlang
+        // 3. X-Ray
         ServiceProcess sp3 = new ServiceProcess(rvgXRay, rngs, STREAM_S3_SERVICE);
         NetworkRoutingPoint routingXRay = new XRayRouting(centerTrace, centerRecupero, STREAM_S3_ROUTING);
-        FlowAssignmentPolicy rrPolicy = new RoundRobinPolicy();
-        centerXRay = new MultiServerMultiQueue(
+        //FlowAssignmentPolicy rrPolicy = new RoundRobinPolicy();
+        centerXRay = new MultiServerSingleQueue(
                 ID_XRAY,
                 "XRay",
                 sp3,
@@ -133,15 +133,14 @@ public final class BaseSimulationModel extends SimulationModel {
                 statCollector,
                 sampleCollector,
                 batchCollector,
-                M3,
-                rrPolicy
+                M3
         );
 
         // 2. Varchi (MSMQ)
         ServiceProcess sp2 = new ServiceProcess(rvgVarchi, rngs, STREAM_S2_SERVICE);
         NetworkRoutingPoint routingVarchi = new FixedRouting(centerXRay);
-        FlowAssignmentPolicy sqfPolicy = new SqfPolicy(rngs, STREAM_S2_FLOWPOL);
-        centerVarchi = new MultiServerMultiQueue(
+        //FlowAssignmentPolicy sqfPolicy = new SqfPolicy(rngs, STREAM_S2_FLOWPOL);
+        centerVarchi = new MultiServerSingleQueue(
                 ID_VARCHI_ELETTRONICI,
                 "Varchi",
                 sp2,
@@ -149,8 +148,7 @@ public final class BaseSimulationModel extends SimulationModel {
                 statCollector,
                 sampleCollector,
                 batchCollector,
-                M2,
-                sqfPolicy
+                M2
         );
 
         // 1. Check-in
