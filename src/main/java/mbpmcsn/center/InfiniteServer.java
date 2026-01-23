@@ -132,7 +132,7 @@ public class InfiniteServer extends Center {
 		// E[Nq] -> Area += 0 * Duration (always 0)
 		statCollector.updateArea(statNqKey, 0, duration);
 		// In Infinite Server, Busy Servers (X) = Number in System (Ns)
-		statCollector.updateArea(statXKey, numJobsInNode, duration);
+		statCollector.updateArea(statXKey, 0, duration);
 	}
 }
 

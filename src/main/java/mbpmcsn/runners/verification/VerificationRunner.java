@@ -123,40 +123,7 @@ public class VerificationRunner implements Runner {
 		compareAndRecord(KeyStatPrefix.TQUEUE, name, modelName, ierows, E_Tq);
 		compareAndRecord(KeyStatPrefix.NSYSTEM, name, modelName, ierows, E_Ns);
 		compareAndRecord(KeyStatPrefix.NQUEUE, name, modelName, ierows, E_Nq);
-		compareAndRecord(KeyStatPrefix.UTILIZATION, name, modelName, ierows, rho);
-	}
-
-	/**
-	 * Caso: k * M/M/1 (Multi-Coda con Round Robin)
-	 * Formula: M/M/1 su flusso diviso
-	 */
-	private void verifyIndependentMM1(String name, BatchCollector collector, double lambdaTot, int k, double meanService) {
-		String modelName = "k*M/M/1 (RoundRobin)";
-		System.out.printf("\n>>> Centro: %-15s [k * M/M/1] (Round Robin)\n", name);
-
-		// Dividiamo il flusso, ogni server riceve lambda/k
-		double lambdaSingle = lambdaTot / k;
-		double mu = 1.0 / meanService;
-
-		// Utilizzo del singolo server (uguale all'utilizzo globale)
-		double rho = lambdaSingle / mu;
-
-		if (checkInstability(rho)) {
-			return;
-		}
-
-		// Formula esatta M/M/1 per il Tempo di Risposta (Wait + Service)
-		double E_Ts = 1.0 / (mu - lambdaSingle);
-		double E_Tq = (rho * meanService) / (1 - rho);
-		double E_Nq = lambdaSingle * E_Tq;
-		double E_Ns = lambdaSingle * E_Ts;
-
-		List<IntervalEstimationRow> ierows = IntervalEstimationRow.fromMapOfData(collector.getBatchMeans());
-		compareAndRecord(KeyStatPrefix.TSYSTEM, name, modelName, ierows, E_Ts);
-		compareAndRecord(KeyStatPrefix.TQUEUE, name, modelName, ierows, E_Tq);
-		compareAndRecord(KeyStatPrefix.NSYSTEM, name, modelName, ierows, E_Ns);
-		compareAndRecord(KeyStatPrefix.NQUEUE, name, modelName, ierows, E_Nq);
-		compareAndRecord(KeyStatPrefix.UTILIZATION, name, modelName, ierows, rho);
+		compareAndRecord(KeyStatPrefix.BUSYSERVERS, name, modelName, ierows, k * rho);
 	}
 
 	/**
@@ -188,8 +155,48 @@ public class VerificationRunner implements Runner {
 		return false;
 	}
 
-	private boolean checkIfWithinInterval(IntervalEstimationRow ierow, double val) {
-		return ierow.getMin() <= val && val <= ierow.getMax();
+	private interface ArithExprAlterateCallback {
+		double alterate(double orig);
+	}
+
+	private static final class DontAlterate implements ArithExprAlterateCallback {
+		@Override
+		public double alterate(double orig) {
+			return orig;
+		}
+	}
+
+	private static final class ReduceByFactorAlterate implements ArithExprAlterateCallback {
+		private final double m;
+		
+		public ReduceByFactorAlterate(double m) {
+			this.m = m;
+		}
+
+		@Override
+		public double alterate(double orig) {
+			return orig / m;
+		}
+	}
+
+	private boolean checkIfWithinInterval(double min, double max, double val) {
+		return min <= val && val <= max;
+	}
+	
+	private String withinIntervalToString(boolean withinInterval) {
+		return withinInterval ? "is within interval" : "is NOT within interval";
+	}
+
+	private IntervalEstimationRow findIntervalEstimationRow(List<IntervalEstimationRow> ierows, String searchKey) {
+		for(final IntervalEstimationRow ierow : ierows) {
+			if(ierow.getMetric().equals(searchKey)) {
+				return ierow;
+			}
+		}
+
+		throw new IllegalArgumentException(
+				"cannot find an interval estimation result for: " + 
+				searchKey);
 	}
 
 	private void compareAndRecord(
@@ -199,36 +206,40 @@ public class VerificationRunner implements Runner {
 			List<IntervalEstimationRow> ierows,
 			double expectedVal) {
 
-		IntervalEstimationRow ie = null;
+		IntervalEstimationRow ie = findIntervalEstimationRow(ierows, keyStatPrefix + name);
 
-		for(final IntervalEstimationRow ierow : ierows) {
-			if(ierow.getMetric().equals(keyStatPrefix + name)) {
-				ie = ierow;
-				break;
-			}
-		}
+		String metricName = keyStatPrefix.getPrettyName();
+		double simMean = ie.getMean();
+		double simMin = ie.getMin(); 
+		double simMax = ie.getMax();
+		double simWidth = ie.getWidth();
+		double theoVal = expectedVal;
 
-		if(ie == null) {
-			throw new IllegalArgumentException(
-					"cannot find an interval estimation result for: " + 
-					keyStatPrefix + name);
-		}
-
-		boolean withinInterval = checkIfWithinInterval(ie, expectedVal);
+		boolean withinInterval = checkIfWithinInterval(simMin, simMax, theoVal);
 
 		System.out.printf(
 				"    %s | SimMean: %.4f | SimMin: %.4f | " +
 				"SimMax: %.4f | SimWidth: %.20f | TheoMean: %.4f => %s\n",
-				keyStatPrefix.getPrettyName(), ie.getMean(), 
-				ie.getMin(), ie.getMax(), ie.getWidth(), 
-				expectedVal, 
-				withinInterval ? "is within interval" : "is NOT within interval");
+				metricName,
+				simMean,
+				simMin,
+				simMax,
+				simWidth,
+				theoVal,
+				withinIntervalToString(withinInterval)
+		);
 
 		results.add(new VerificationResultRow(
-					name, keyStatPrefix.getPrettyName(), 
-					modelName, ie.getMean(), ie.getMin(), 
-					ie.getMax(), ie.getWidth(), expectedVal, 
-					withinInterval));
+					name, 
+					metricName, 
+					modelName, 
+					simMean, 
+					simMin,
+					simMax, 
+					simWidth,
+					theoVal, 
+					withinInterval)
+		);
 	}
 
 	private void saveVerificationReport() {

@@ -34,11 +34,13 @@ public class App {
 
 			System.out.println("3. VERIFICATION (double med mean time)");
 
-			System.out.println("4. TRANSIENT ANALYSIS (double med mean time)");
+			System.out.println("4. VERIFICATION");
 
-			System.out.println("5. TRANSIENT ANALYSIS");
+			System.out.println("5. TRANSIENT ANALYSIS (double med mean time)");
 
-			System.out.println("6. Esci");
+			System.out.println("6. TRANSIENT ANALYSIS");
+
+			System.out.println("7. Esci");
 			System.out.println("----------------------------------------------");
 			System.out.print("> Scelta: ");
 
@@ -81,6 +83,16 @@ public class App {
 						break;
 
 					case 4:
+						System.out.println("\n[INFO] Avvio Verification (M/M/k vs Simulation)...");
+						System.out.println("[INFO] Nota: La durata è determinata dal raggiungimento dei Batch (k=96, double med mean time).");
+						runner = new VerificationRunner(
+								"verification-base-medMeanTime",
+								new BaseSimulationModelBuilder(),
+								Constants.ARRIVAL_MED_MEAN_TIME
+						);
+						break;
+
+					case 5:
 						System.out.println("\n[INFO] Avvio Analisi del Transitorio (double med mean time)...");
 						runner = new FiniteHorizonRunner(
 								"transient-analysis-base-doubleMedMeanTime",
@@ -91,7 +103,7 @@ public class App {
 								Constants.TRANSIENT_SAMPLING_INTERVAL);
 						break;
 
-					case 5:
+					case 6:
 						System.out.println("\n[INFO] Avvio Analisi del Transitorio...");
 						runner = new FiniteHorizonRunner(
 								"transient-analysis-base-medMeanTime",
@@ -102,7 +114,7 @@ public class App {
 								Constants.TRANSIENT_SAMPLING_INTERVAL);
 						break;
 
-					case 6:
+					case 7:
 						System.out.println("Uscita.");
 						exit = true;
 						break;

@@ -11,6 +11,6 @@ public final class ExponentialGenerator implements RandomVariateGenerator {
 
 	@Override
 	public double generate(Rngs rngs) {
-		return Commons.exponential(mean, rngs);
+		return -mean * Math.log(1.0 - rngs.random());
 	}
 }

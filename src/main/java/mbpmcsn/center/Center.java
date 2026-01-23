@@ -33,7 +33,7 @@ public abstract class Center {
 	// --- KEYS FOR TIME-BASED STATS ---
 	protected final String statNsKey; // Number in System -> E[Ns]
 	protected final String statNqKey; // Number in Queue -> E[Nq]
-	protected final String statXKey; // Number of Busy Servers -> Used for Utilization (Rho)
+	protected final String statXKey; // Number of busy servers -> E[X]
 	// --- KEYS FOR SAMPLING  ---
 	protected static final String sampleTsKey = "TimeTotal";
 	protected static final String sampleTqKey = "TimeQueue";
@@ -53,7 +53,7 @@ public abstract class Center {
 		TQUEUE("Tq_", "Queue time"),
 		NSYSTEM("Ns_", "Num in center"),
 		NQUEUE("Nq_", "Num in queue"),
-		UTILIZATION("X_", "Utilization"),
+		BUSYSERVERS("X_", "Num of busy servers"),
 		SERVICE("S_", "Service time");
 
 		private final String label;
@@ -100,7 +100,7 @@ public abstract class Center {
 		statSKey = KeyStatPrefix.SERVICE + name;
 		statNsKey = KeyStatPrefix.NSYSTEM + name;
 		statNqKey = KeyStatPrefix.NQUEUE + name;
-		statXKey = KeyStatPrefix.UTILIZATION + name;
+		statXKey = KeyStatPrefix.BUSYSERVERS + name;
 
 		if(statCollector == null) {
 			throw new IllegalArgumentException(

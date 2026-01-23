@@ -10,7 +10,6 @@ import mbpmcsn.process.rvg.ExponentialGenerator;
 import mbpmcsn.process.rvg.RandomVariateGenerator;
 import mbpmcsn.process.rvg.TruncatedNormalGenerator;
 import mbpmcsn.routing.*;
-import mbpmcsn.flowpolicy.*;
 import mbpmcsn.desbook.Rngs;
 import mbpmcsn.event.EventQueue;
 import mbpmcsn.stats.accumulating.StatCollector;
@@ -124,7 +123,6 @@ public final class BaseSimulationModel extends SimulationModel {
         // 3. X-Ray
         ServiceProcess sp3 = new ServiceProcess(rvgXRay, rngs, STREAM_S3_SERVICE);
         NetworkRoutingPoint routingXRay = new XRayRouting(centerTrace, centerRecupero, STREAM_S3_ROUTING);
-        //FlowAssignmentPolicy rrPolicy = new RoundRobinPolicy();
         centerXRay = new MultiServerSingleQueue(
                 ID_XRAY,
                 "XRay",
@@ -139,7 +137,6 @@ public final class BaseSimulationModel extends SimulationModel {
         // 2. Varchi (MSMQ)
         ServiceProcess sp2 = new ServiceProcess(rvgVarchi, rngs, STREAM_S2_SERVICE);
         NetworkRoutingPoint routingVarchi = new FixedRouting(centerXRay);
-        //FlowAssignmentPolicy sqfPolicy = new SqfPolicy(rngs, STREAM_S2_FLOWPOL);
         centerVarchi = new MultiServerSingleQueue(
                 ID_VARCHI_ELETTRONICI,
                 "Varchi",
