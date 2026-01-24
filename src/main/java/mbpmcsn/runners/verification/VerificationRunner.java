@@ -114,6 +114,9 @@ public class VerificationRunner implements Runner {
 		double pq = (Math.pow(a, k) * p0) / (factorial(k) * (1.0 - rho));
 
 		// Tempi medi
+		System.out.println("p0 = " + p0);
+		System.out.println("pq = " + pq);
+
 		double E_Tq = pq / (k * mu - lambda);
 		double E_Ts = E_Tq + meanService;
 		double E_Nq = lambda * E_Tq;
