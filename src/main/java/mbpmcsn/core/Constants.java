@@ -16,6 +16,7 @@ public final class Constants {
     public static final int STREAM_S1_SERVICE    = 10;
 
     public static final int STREAM_S2_SERVICE    = 20;
+    public static final int STREAM_S2_ROUTING    = 21;
 
     public static final int STREAM_S3_SERVICE    = 40;
     public static final int STREAM_S3_ROUTING    = 41; // trace/recupero
@@ -25,13 +26,16 @@ public final class Constants {
 
     public static final int STREAM_S5_SERVICE    = 60;
 
+    public static final int STREAM_S6_SERVICE    = 70;
+
     // --- Topology Node IDs ---
     public static final int ID_INGRESSO = 0;       // Source
     public static final int ID_BANCHI_CHECKIN = 1;        // MSSQ
-    public static final int ID_VARCHI_ELETTRONICI = 2;         // MSMQ
-    public static final int ID_XRAY = 3;           // MSMQ
+    public static final int ID_VARCHI_ELETTRONICI = 2;         // MSSQ
+    public static final int ID_XRAY = 3;           // MSSQ
     public static final int ID_TRACE_DETECTION = 4;          // SSQ
     public static final int ID_RECUPERO_OGGETTI = 5;       // IS (Infinite Server)
+    public static final int ID_FAST_TRACK = 6; // SSQ
 
     // --- Arrival Process ---
     public static final double ARRIVAL_PEAK_RATE = 0.222383; /* pax/sec */
@@ -59,6 +63,7 @@ public final class Constants {
     public static final double P_STANDARD = 0.9; // Salta Trace Detection
     public static final double P_FAIL = 0.0001; // Espulso dal sistema
     public static final double P_SUCCESS = 0.9999; // Supera controlli sicurezza
+    public static final double P_FAST_TRACK = 0.10;
 
     // --- Center 1: Banchi Accettazione (MSSQ), Truncated Normal
     public static final int M1 = 8; // numero server centro 1
@@ -89,5 +94,11 @@ public final class Constants {
     public static final double STD_S5 = 30.0;
     public static final double LB5 = 60.0;
     public static final double UB5 = 180.0;
+    // --- Center 6: Fast Track (SSQ), Truncated Normal  ---
+    public static final int M6 = 1; // Numero server Fast Track
+    public static final double MEAN_S6 = 60.0;
+    public static final double STD_S6 = 30.0;
+    public static final double LB6 = 30.0;
+    public static final double UB6 = 70.0;
 
 }

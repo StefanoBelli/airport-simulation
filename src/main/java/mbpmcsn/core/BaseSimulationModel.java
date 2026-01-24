@@ -34,9 +34,9 @@ public final class BaseSimulationModel extends SimulationModel {
     /* centers */
     private Center centerCheckIn; // ID 1
     private Center centerVarchi; // ID 2
-    private Center centerXRay; // ID 4
-    private Center centerTrace; // ID 5
-    private Center centerRecupero; // ID 6
+    private Center centerXRay; // ID 3
+    private Center centerTrace; // ID 4
+    private Center centerRecupero; // ID 5
 
     private List<Center> centers;
 
