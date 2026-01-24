@@ -80,7 +80,8 @@ public class VerificationRunner implements Runner {
 		verifyMMkNode("TraceDetection", batchCollector, lambdaTrace, Constants.M4, Constants.MEAN_S4, "M/M/" + Constants.M4);
 
 		// --- VERIFICA CENTRO 5: Recupero (M/M/inf) ---
-		verifyInfiniteServer("Recupero", lambdaTot, batchCollector, Constants.MEAN_S5);
+		double lambdaRecupero = lambdaTot * Constants.P_STANDARD + lambdaTot * Constants.P_CHECK * Constants.P_SUCCESS;
+		verifyInfiniteServer("Recupero", lambdaRecupero, batchCollector, Constants.MEAN_S5);
 
 		saveVerificationReport();
 	}
@@ -153,30 +154,6 @@ public class VerificationRunner implements Runner {
 		}
 
 		return false;
-	}
-
-	private interface ArithExprAlterateCallback {
-		double alterate(double orig);
-	}
-
-	private static final class DontAlterate implements ArithExprAlterateCallback {
-		@Override
-		public double alterate(double orig) {
-			return orig;
-		}
-	}
-
-	private static final class ReduceByFactorAlterate implements ArithExprAlterateCallback {
-		private final double m;
-		
-		public ReduceByFactorAlterate(double m) {
-			this.m = m;
-		}
-
-		@Override
-		public double alterate(double orig) {
-			return orig / m;
-		}
 	}
 
 	private boolean checkIfWithinInterval(double min, double max, double val) {
