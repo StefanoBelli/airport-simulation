@@ -63,8 +63,8 @@ public final class Constants {
     public static final double P_STANDARD = 0.9; // Salta Trace Detection
     public static final double P_FAIL = 0.0001; // Espulso dal sistema
     public static final double P_SUCCESS = 0.9999; // Supera controlli sicurezza
-    public static final double IMPROVED_P_FAST_TRACK = 0.34;
-    public static final double IMPROVED_P_SLOW_PATH = 0.66;
+    public static final double IMPROVED_P_FAST_TRACK = 0.33;
+    public static final double IMPROVED_P_SLOW_PATH = 0.67;
 
     // --- Center 1: Banchi Accettazione (MSSQ), Truncated Normal
     public static final int M1 = 8; // numero server centro 1
