@@ -13,6 +13,7 @@ public final class Job {
     private boolean checkedBaggage;
     private boolean securityCheckRequested;
     private boolean securityCheckFailed;
+    private boolean fastTrackUsed;
 
     public Job(double arrivalTime) {
         this.id = ++ID_COUNTER;
@@ -83,4 +84,7 @@ public final class Job {
         return "Job#" + id;
     }
 
+    public void setFastTrackUsage(boolean isFastTrackSelected) {
+        fastTrackUsed = isFastTrackSelected;
+    }
 }
