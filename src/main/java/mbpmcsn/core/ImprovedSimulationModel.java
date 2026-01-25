@@ -74,14 +74,14 @@ public final class ImprovedSimulationModel extends SimulationModel {
 			rvgXRay = new ExponentialGenerator(MEAN_S3);
 			rvgTrace = new ExponentialGenerator(MEAN_S4);
 			rvgRecupero = new ExponentialGenerator(MEAN_S5);
-			rvgFastTrack = new ExponentialGenerator(MEAN_S6); // stessa media altri server raggi x
+			rvgFastTrack = new ExponentialGenerator(IMPROVED_MEAN_S6); // stessa media altri server raggi x
 		} else {
 			rvgCheckIn = new TruncatedNormalGenerator(MEAN_S1, STD_S1, LB1, UB1);
 			rvgVarchi = new TruncatedNormalGenerator(MEAN_S2, STD_S2, LB2, UB2);
 			rvgXRay = new TruncatedNormalGenerator(MEAN_S3, STD_S3, LB3, UB3);
 			rvgTrace = new TruncatedNormalGenerator(MEAN_S4, STD_S4, LB4, UB4);
 			rvgRecupero = new TruncatedNormalGenerator(MEAN_S5, STD_S5, LB5, UB5);
-			rvgFastTrack = new TruncatedNormalGenerator(MEAN_S6, STD_S6, LB6, UB6); // stessi parametri raggi x
+			rvgFastTrack = new TruncatedNormalGenerator(IMPROVED_MEAN_S6, IMPROVED_STD_S6, IMPROVED_LB6, IMPROVED_UB6); // stessi parametri raggi x
 		}
 
 	}
@@ -119,7 +119,7 @@ public final class ImprovedSimulationModel extends SimulationModel {
 				statCollector,
 				sampleCollector,
 				batchCollector,
-				M4
+				IMPROVED_M4
 				);
 
 		NetworkRoutingPoint routingSecurityExit = new XRayRouting(centerTrace, centerRecupero, STREAM_S3_ROUTING);
@@ -140,14 +140,14 @@ public final class ImprovedSimulationModel extends SimulationModel {
 		// --- 6. Fast Track ---
 		ServiceProcess sp6 = new ServiceProcess(rvgFastTrack, rngs, STREAM_S6_SERVICE);
 		fastTrack = new MultiServerSingleQueue(
-				ID_FAST_TRACK,
+				IMPROVED_ID_FAST_TRACK,
 				"FastTrack",
 				sp6,
 				routingSecurityExit, // Converge nello stesso punto di XRay
 				statCollector,
 				sampleCollector,
 				batchCollector,
-				M6
+				IMPROVED_M6
 				);
 
 		// --- 2. Varchi Elettronici ---

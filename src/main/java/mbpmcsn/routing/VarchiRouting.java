@@ -3,7 +3,7 @@ package mbpmcsn.routing;
 import mbpmcsn.center.Center;
 import mbpmcsn.desbook.Rngs;
 import mbpmcsn.entity.Job;
-import static mbpmcsn.core.Constants.P_FAST_TRACK;
+import static mbpmcsn.core.Constants.IMPROVED_P_FAST_TRACK;
 
 /*
  * Decides if the job goes to the Fast Track lane
@@ -25,7 +25,7 @@ public final class VarchiRouting implements NetworkRoutingPoint {
     public Center getNextCenter(Rngs r, Job job) {
         r.selectStream(streamIndex);
 
-        boolean isFastTrackBeingUsed = r.random() < P_FAST_TRACK;
+        boolean isFastTrackBeingUsed = r.random() < IMPROVED_P_FAST_TRACK;
         job.setFastTrackBeingUsed(isFastTrackBeingUsed);
 
         return isFastTrackBeingUsed ? fastTrack : xRayStandard;

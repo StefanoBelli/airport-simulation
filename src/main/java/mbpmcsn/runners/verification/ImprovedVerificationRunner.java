@@ -73,16 +73,16 @@ public class ImprovedVerificationRunner implements Runner {
 		verifyMMkNode("Varchi", batchCollector, lambdaTot, Constants.M2, Constants.MEAN_S2, "M/M/" + Constants.M2);
 
 		// --- VERIFICA CENTRO 6: Fast track (M/M/1 approssimato) ---
-		double lambdaFastTrack = lambdaTot * Constants.P_FAST_TRACK;
-		verifyMMkNode("FastTrack", batchCollector, lambdaFastTrack, Constants.M6, Constants.MEAN_S6, "M/M/" + Constants.M6);
+		double lambdaFastTrack = lambdaTot * Constants.IMPROVED_P_FAST_TRACK;
+		verifyMMkNode("FastTrack", batchCollector, lambdaFastTrack, Constants.IMPROVED_M6, Constants.IMPROVED_MEAN_S6, "M/M/" + Constants.IMPROVED_M6);
 
 		// --- VERIFICA CENTRO 3: XRay (M/M/k approssimato) ---
-		double lambdaXRay = lambdaTot * Constants.P_SLOW_PATH;
+		double lambdaXRay = lambdaTot * Constants.IMPROVED_P_SLOW_PATH;
 		verifyMMkNode("XRay", batchCollector, lambdaXRay, Constants.M3, Constants.MEAN_S3, "M/M/" + Constants.M3);
 
 		// --- VERIFICA CENTRO 4: Trace Detection (M/M/k) ---
 		double lambdaTrace = lambdaTot * Constants.P_CHECK;
-		verifyMMkNode("TraceDetection", batchCollector, lambdaTrace, Constants.M4, Constants.MEAN_S4, "M/M/" + Constants.M4);
+		verifyMMkNode("TraceDetection", batchCollector, lambdaTrace, Constants.IMPROVED_M4, Constants.MEAN_S4, "M/M/" + Constants.IMPROVED_M4);
 
 		// --- VERIFICA CENTRO 5: Recupero (M/M/inf) ---
 		double lambdaRecupero = lambdaTot * Constants.P_STANDARD + lambdaTot * Constants.P_CHECK * Constants.P_SUCCESS;

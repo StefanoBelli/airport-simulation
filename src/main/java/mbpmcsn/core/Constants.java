@@ -35,7 +35,7 @@ public final class Constants {
     public static final int ID_XRAY = 3;           // MSSQ
     public static final int ID_TRACE_DETECTION = 4;          // SSQ
     public static final int ID_RECUPERO_OGGETTI = 5;       // IS (Infinite Server)
-    public static final int ID_FAST_TRACK = 6; // SSQ
+    public static final int IMPROVED_ID_FAST_TRACK = 6; // SSQ
 
     // --- Arrival Process ---
     public static final double ARRIVAL_PEAK_RATE = 0.222383; /* pax/sec */
@@ -63,8 +63,8 @@ public final class Constants {
     public static final double P_STANDARD = 0.9; // Salta Trace Detection
     public static final double P_FAIL = 0.0001; // Espulso dal sistema
     public static final double P_SUCCESS = 0.9999; // Supera controlli sicurezza
-    public static final double P_FAST_TRACK = 0.25;
-    public static final double P_SLOW_PATH = 0.75;
+    public static final double IMPROVED_P_FAST_TRACK = 0.34;
+    public static final double IMPROVED_P_SLOW_PATH = 0.66;
 
     // --- Center 1: Banchi Accettazione (MSSQ), Truncated Normal
     public static final int M1 = 8; // numero server centro 1
@@ -85,7 +85,8 @@ public final class Constants {
     public static final double LB3 = 30.0;
     public static final double UB3 = 70;
     // --- Center 4: Trace Detection (SSQ), Truncated Normal ---
-	public static final int M4 = 2;
+	public static final int M4 = 1;
+	public static final int IMPROVED_M4 = 2;
     public static final double MEAN_S4 = 60.0;
     public static final double STD_S4 = 20.0;
     public static final double LB4 = 30.0;
@@ -96,9 +97,9 @@ public final class Constants {
     public static final double LB5 = 60.0;
     public static final double UB5 = 180.0;
     // --- Center 6: Fast Track (SSQ), Truncated Normal  ---
-    public static final int M6 = 2; // Numero server Fast Track
-    public static final double MEAN_S6 = 45.0;
-    public static final double STD_S6 = 30.0;
-    public static final double LB6 = 30.0;
-    public static final double UB6 = 60.0;
+    public static final int IMPROVED_M6 = 3; // Numero server Fast Track
+    public static final double IMPROVED_MEAN_S6 = 50.0;
+    public static final double IMPROVED_STD_S6 = 20.0;
+    public static final double IMPROVED_LB6 = 20.0;
+    public static final double IMPROVED_UB6 = 60.0;
 }
