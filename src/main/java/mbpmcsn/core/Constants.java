@@ -100,5 +100,4 @@ public final class Constants {
     public static final double STD_S6 = 30.0;
     public static final double LB6 = 30.0;
     public static final double UB6 = 70.0;
-
 }

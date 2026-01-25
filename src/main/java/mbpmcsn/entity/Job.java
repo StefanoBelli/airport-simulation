@@ -13,7 +13,7 @@ public final class Job {
     private boolean checkedBaggage;
     private boolean securityCheckRequested;
     private boolean securityCheckFailed;
-    private boolean fastTrackUsed;
+    private boolean fastTrackBeingUsed;
 
     public Job(double arrivalTime) {
         this.id = ++ID_COUNTER;
@@ -55,6 +55,14 @@ public final class Job {
     	this.securityCheckFailed = securityCheckFailed;
     }
 
+    public void setFastTrackBeingUsed(boolean fastTrackBeingUsed) {
+        this.fastTrackBeingUsed = fastTrackBeingUsed;
+    }
+
+    public boolean isFastTrackBeingUsed() {
+    	return fastTrackBeingUsed;
+    }
+
     public double getLastQueuedTime() {
     	return lastQueuedTime;
     }
@@ -82,9 +90,5 @@ public final class Job {
     @Override
     public String toString() {
         return "Job#" + id;
-    }
-
-    public void setFastTrackUsage(boolean isFastTrackSelected) {
-        fastTrackUsed = isFastTrackSelected;
     }
 }

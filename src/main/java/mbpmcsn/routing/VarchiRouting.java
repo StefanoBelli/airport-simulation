@@ -25,9 +25,9 @@ public final class VarchiRouting implements NetworkRoutingPoint {
     public Center getNextCenter(Rngs r, Job job) {
         r.selectStream(streamIndex);
 
-        boolean isFastTrackSelected = r.random() < P_FAST_TRACK;
-        job.setFastTrackUsage(isFastTrackSelected);
+        boolean isFastTrackBeingUsed = r.random() < P_FAST_TRACK;
+        job.setFastTrackBeingUsed(isFastTrackBeingUsed);
 
-        return isFastTrackSelected ? fastTrack : xRayStandard;
+        return isFastTrackBeingUsed ? fastTrack : xRayStandard;
     }
 }
