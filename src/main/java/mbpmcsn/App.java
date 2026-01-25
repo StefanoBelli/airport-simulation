@@ -3,6 +3,7 @@ package mbpmcsn;
 import mbpmcsn.core.Constants;
 import mbpmcsn.runners.smbuilders.ImprovedSimulationModelBuilder;
 import mbpmcsn.runners.verification.VerificationRunner;
+import mbpmcsn.runners.verification.ImprovedVerificationRunner;
 import mbpmcsn.runners.finitehorizon.FiniteHorizonRunner;
 import mbpmcsn.runners.steadystate.SteadyStateRunner;
 import mbpmcsn.runners.Runner;
@@ -213,7 +214,7 @@ public class App {
                     case 3:
                         System.out.println("\n[IMPROVED] Avvio Verification (M/M/k vs Simulation)...");
                         System.out.println("[INFO] Nota: La durata è determinata dal raggiungimento dei Batch (k=96, med mean time).");
-                        runner = new VerificationRunner(
+                        runner = new ImprovedVerificationRunner(
                                 "verification-improved-medMeanTime",
                                 new ImprovedSimulationModelBuilder(),
                                 Constants.ARRIVAL_MED_MEAN_TIME
