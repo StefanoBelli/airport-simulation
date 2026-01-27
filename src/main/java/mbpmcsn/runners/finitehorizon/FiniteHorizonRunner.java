@@ -276,5 +276,26 @@ public final class FiniteHorizonRunner implements Runner {
 		System.out.printf("    Percentuale Simulata: %.4f%%\n", pCheckSimulata);
 
 		System.out.println("####################################################################");
+
+		if (popStats.containsKey("Ts_FastTrack") && popStats.containsKey("Ts_Varchi")) {
+
+			System.out.println("\n--------------------------------------------------------------------");
+			System.out.println(">>> CHECK 3: Split Fast Track vs X-Ray Standard (SCENARIO IMPROVED)");
+
+			long passVarchi = popStats.get("Ts_Varchi").getCount();
+			long passFastTrack = popStats.get("Ts_FastTrack").getCount();
+			// Nota: passXRay l'abbiamo già recuperato sopra
+
+			double pFastSimulata = (passVarchi > 0) ? (double) passFastTrack / passVarchi * 100.0 : 0.0;
+			double pStandardSimulata = (passVarchi > 0) ? (double) passXRay / passVarchi * 100.0 : 0.0;
+
+			System.out.printf("    Totale Uscita Varchi: %d\n", passVarchi);
+			System.out.println("    ------------------------------------------");
+
+			System.out.printf("    [FAST TRACK] Target: ~33.0%% | Simulato: %.4f%% (Pax: %d)\n", pFastSimulata, passFastTrack);
+			System.out.printf("    [STANDARD]   Target: ~67.0%% | Simulato: %.4f%% (Pax: %d)\n", pStandardSimulata, passXRay);
+		}
+
+		System.out.println("####################################################################");
 	}
 }

@@ -26,6 +26,9 @@ METRICS_TO_PLOT = [
    # --- Trace Detection (AGGIUNTO) ---
    'Ts_TraceDetection', 'Ns_TraceDetection', 'Nq_TraceDetection',
 
+   # --- Trace Detection (AGGIUNTO) ---
+      'Ts_FastTrack', 'Ns_FastTrack', 'Nq_FastTrack',
+
 
    # --- Recupero Oggetti (AGGIUNTO) ---
    'Ts_Recupero', 'Ns_Recupero', 'Nq_Recupero',
